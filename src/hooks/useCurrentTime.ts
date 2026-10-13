@@ -19,15 +19,52 @@ function getJapaneseEra(year: number): string {
   return `${year}年`;
 }
 
+/**
+ * スマートクロック・常設端末専用の自己補正型高精度時計フック
+ * - 単純な setInterval ではなく、次の秒の変わり目（ミリ秒単位）に合わせて正確に補正発火
+ * - タブ復帰、画面スリープ復帰（visibilitychange / focus / pageshow）時に即座に実時刻へ再同期
+ * - バックグラウンド間引きによる遅延や停止を完全に自己回復
+ */
 export function useCurrentTime(): CurrentTimeInfo {
   const [now, setNow] = useState<Date>(() => new Date());
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setNow(new Date());
-    }, 1000);
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let isDisposed = false;
 
-    return () => clearInterval(timer);
+    // 次の正秒（ミリ秒が 000 になる瞬間）を計算して発火する自己補正スケジューラ
+    const tick = () => {
+      if (isDisposed) return;
+      setNow(new Date());
+
+      const nowMs = Date.now();
+      const delayToNextSecond = 1000 - (nowMs % 1000);
+      timeoutId = setTimeout(tick, delayToNextSecond);
+    };
+
+    // 初回スケジューリング
+    const initialDelay = 1000 - (Date.now() % 1000);
+    timeoutId = setTimeout(tick, initialDelay);
+
+    // スリープ復帰・タブ復帰・ウィンドウ再フォーカス時の即時強制同期
+    const handleSync = () => {
+      setNow(new Date());
+      if (timeoutId) clearTimeout(timeoutId);
+      const delay = 1000 - (Date.now() % 1000);
+      timeoutId = setTimeout(tick, delay);
+    };
+
+    document.addEventListener('visibilitychange', handleSync);
+    window.addEventListener('focus', handleSync);
+    window.addEventListener('pageshow', handleSync);
+
+    return () => {
+      isDisposed = true;
+      if (timeoutId) clearTimeout(timeoutId);
+      document.removeEventListener('visibilitychange', handleSync);
+      window.removeEventListener('focus', handleSync);
+      window.removeEventListener('pageshow', handleSync);
+    };
   }, []);
 
   const hours = now.getHours().toString().padStart(2, '0');
