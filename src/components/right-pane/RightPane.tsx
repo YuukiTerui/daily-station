@@ -52,10 +52,10 @@ export const RightPane: React.FC<RightPaneProps> = ({
                   key={idx}
                   type="button"
                   onClick={() => setSelectedDay(day)}
-                  className="flex items-center justify-between p-1.5 px-2 rounded-xl bg-muted/30 hover:bg-muted/60 active:scale-[0.98] transition text-left cursor-pointer"
+                  className="flex items-center justify-between p-1.5 px-2 rounded-xl bg-muted/30 hover:bg-muted/60 active:scale-[0.98] transition text-left cursor-pointer whitespace-nowrap overflow-hidden"
                 >
                   {/* 日付 & 曜日 */}
-                  <div className="flex items-center gap-1.5 w-14">
+                  <div className="flex items-center gap-1 shrink-0 w-12">
                     <span className="text-xs font-mono font-medium text-muted-foreground">
                       {day.date.slice(5).replace('-', '/')}
                     </span>
@@ -65,19 +65,19 @@ export const RightPane: React.FC<RightPaneProps> = ({
                   </div>
 
                   {/* 天気アイコン & 降水確率 */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <WeatherIcon
                       name={day.condition.iconName}
                       className="w-5 h-5 text-primary"
                     />
-                    <div className="flex items-center gap-0.5 text-[10px] text-sky-500 w-8 justify-end font-medium">
-                      <Umbrella className="w-2.5 h-2.5" />
+                    <div className="flex items-center gap-0.5 text-[10px] text-sky-500 font-medium whitespace-nowrap w-9 justify-end">
+                      <Umbrella className="w-2.5 h-2.5 shrink-0" />
                       <span>{day.precipitationProbability}%</span>
                     </div>
                   </div>
 
                   {/* 気温 (高 / 低) */}
-                  <div className="flex items-center gap-1 text-xs font-mono w-16 justify-end">
+                  <div className="flex items-center gap-1 text-xs font-mono shrink-0 whitespace-nowrap w-16 justify-end">
                     <span className="font-bold text-rose-500">{day.tempMax}°</span>
                     <span className="text-muted-foreground">/</span>
                     <span className="font-bold text-blue-500">{day.tempMin}°</span>

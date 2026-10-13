@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Moon, Sun, RefreshCw } from 'lucide-react';
 
 interface StatusBarProps {
-  lastUpdated?: Date;
+  lastUpdated?: Date | string;
   isNightMode: boolean;
   onToggleNightMode: () => void;
   onRefresh: () => void;
@@ -17,9 +17,11 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   onRefresh,
   isFetching,
 }) => {
-  const updatedTimeString = lastUpdated
-    ? `${lastUpdated.getHours().toString().padStart(2, '0')}:${lastUpdated.getMinutes().toString().padStart(2, '0')}`
-    : '--:--';
+  const dateObj = lastUpdated ? new Date(lastUpdated) : null;
+  const updatedTimeString =
+    dateObj && !Number.isNaN(dateObj.getTime())
+      ? `${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`
+      : '--:--';
 
   return (
     <footer className="w-full h-[42px] px-3 bg-card/95 border-t border-border flex items-center justify-between text-xs select-none">
@@ -37,7 +39,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
       {/* ステータスインジケーター & ナイトモード */}
       <div className="flex items-center gap-3">
         {/* データ更新状況 */}
-        <div className="flex items-center gap-1.5 text-muted-foreground text-[11px]">
+        <div className="flex items-center gap-1.5 text-muted-foreground text-[11px] whitespace-nowrap">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
