@@ -34,7 +34,7 @@ export const RightPane: React.FC<RightPaneProps> = ({
           </span>
         </div>
 
-        {/* 予報リスト (14pxフォントスケール＆タッチ領域の最適化) */}
+        {/* 予報リスト (気温列を80pxに拡張し℃の潰れを完全解消) */}
         <div className="flex-1 flex flex-col justify-between py-1 gap-1">
           {isLoading && daysToShow.length === 0 ? (
             <div className="flex items-center justify-center h-full text-xs text-muted-foreground animate-pulse">
@@ -58,39 +58,42 @@ export const RightPane: React.FC<RightPaneProps> = ({
                   key={idx}
                   type="button"
                   onClick={() => setSelectedDay(day)}
-                  className={`flex items-center justify-between px-2.5 py-1.5 rounded-xl text-left cursor-pointer transition select-none ${
+                  className={`flex items-center justify-between px-2 py-1.5 rounded-xl text-left cursor-pointer transition select-none ${
                     isToday
                       ? 'bg-primary/10 border border-primary/25 shadow-2xs'
                       : 'hover:bg-muted/50 active:scale-[0.98]'
                   }`}
                 >
                   {/* 天気アイコン & 降水確率 */}
-                  <div className="flex items-center gap-1.5 w-14 shrink-0">
+                  <div className="flex items-center gap-1 w-11 shrink-0">
                     <WeatherIcon
                       name={day.condition.iconName}
                       className="w-5 h-5 text-primary shrink-0"
                     />
                     {day.precipitationProbability > 0 ? (
-                      <span className="text-xs font-mono text-sky-500 font-bold whitespace-nowrap">
+                      <span className="text-[11px] font-mono text-sky-500 font-bold whitespace-nowrap">
                         {day.precipitationProbability}%
                       </span>
                     ) : (
-                      <span className="text-xs text-muted-foreground/40 font-mono">
+                      <span className="text-[11px] text-muted-foreground/40 font-mono">
                         --
                       </span>
                     )}
                   </div>
 
                   {/* 曜日 (14px 太字) */}
-                  <div className="text-sm shrink-0 w-12 text-center">
+                  <div className="text-sm shrink-0 w-11 text-center">
                     <span className={dayColor}>{dayName}</span>
                   </div>
 
-                  {/* 気温 (高/低, 14px 太字) */}
-                  <div className="flex items-center justify-end font-mono text-sm font-bold shrink-0 w-16 whitespace-nowrap">
+                  {/* 気温 (高/低, 80px幅で℃が絶対に潰れない設計) */}
+                  <div className="flex items-baseline justify-end font-mono text-sm font-bold shrink-0 w-20 whitespace-nowrap">
                     <span className="text-foreground">{day.tempMax}</span>
-                    <span className="text-muted-foreground/60 mx-0.5">/</span>
-                    <span className="text-muted-foreground">{day.tempMin}℃</span>
+                    <span className="text-muted-foreground/50 mx-0.5">/</span>
+                    <span className="text-muted-foreground">{day.tempMin}</span>
+                    <span className="text-[11px] font-semibold text-muted-foreground/80 ml-0.5">
+                      ℃
+                    </span>
                   </div>
                 </button>
               );

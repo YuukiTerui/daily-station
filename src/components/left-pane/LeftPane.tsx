@@ -47,10 +47,10 @@ export const LeftPane: React.FC<LeftPaneProps> = ({
         </div>
       </Card>
 
-      {/* 2. 今日の天気 & 屋内外温湿度 (統合カード) */}
+      {/* 2. 今日の天気 & 屋内外温湿度 (2段ブロック構造で空間を自然に充填) */}
       <Card className="flex-1 flex flex-col justify-between p-3 bg-card/95 shadow-sm border-border/60">
         {/* ヘッダー: 地点 & 天気概要 */}
-        <div className="flex items-center justify-between pb-2 border-b border-border/50">
+        <div className="flex items-center justify-between pb-1.5 border-b border-border/50">
           <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
             <MapPin className="w-3.5 h-3.5 text-primary" />
             <span>{weather?.stationName || '東京'}</span>
@@ -77,44 +77,50 @@ export const LeftPane: React.FC<LeftPaneProps> = ({
           ) : null}
         </div>
 
-        {/* 屋外・屋内温湿度ブロック (フォントサイズとパディングを拡大して密度を最適化) */}
-        <div className="flex flex-col gap-2.5 my-auto py-1">
-          {/* 屋外 */}
-          <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-muted/40">
-            <span className="text-xs font-bold text-muted-foreground w-10">屋外</span>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1 text-sm font-mono font-bold text-foreground">
-                <Thermometer className="w-4 h-4 text-rose-500" />
-                <span>{current ? current.temperature.toFixed(1) : '--'}℃</span>
+        {/* 屋外・屋内温湿度ブロック (2段構造: ラベルを上段にし、温度と湿度をゆったり配置) */}
+        <div className="flex flex-col gap-2 my-auto py-0.5">
+          {/* 屋外ブロック */}
+          <div className="px-3 py-1.5 rounded-xl bg-muted/30 flex flex-col gap-0.5">
+            <span className="text-[11px] font-bold text-muted-foreground">屋外</span>
+            <div className="flex items-center justify-around">
+              <div className="flex items-baseline gap-1 font-mono font-extrabold text-base text-foreground">
+                <Thermometer className="w-3.5 h-3.5 text-rose-500 self-center" />
+                <span>{current ? current.temperature.toFixed(1) : '--'}</span>
+                <span className="text-xs font-bold text-muted-foreground">℃</span>
               </div>
-              <div className="flex items-center gap-1 text-sm font-mono font-bold text-foreground">
-                <Droplets className="w-4 h-4 text-sky-500" />
-                <span>{current ? current.humidity : '--'}%</span>
+              <div className="flex items-baseline gap-1 font-mono font-extrabold text-base text-foreground">
+                <Droplets className="w-3.5 h-3.5 text-sky-500 self-center" />
+                <span>{current ? current.humidity : '--'}</span>
+                <span className="text-xs font-bold text-muted-foreground">%</span>
               </div>
             </div>
           </div>
 
-          {/* 室内 */}
-          <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-muted/50 border border-primary/20">
-            <span className="text-xs font-bold text-foreground w-10">室内</span>
-            <div className="flex items-center gap-3.5">
-              <div className="flex items-center gap-1 text-sm font-mono font-bold text-foreground">
-                <Thermometer className="w-4 h-4 text-emerald-500" />
-                <span>{indoor.temperature.toFixed(1)}℃</span>
-              </div>
-              <div className="flex items-center gap-1 text-sm font-mono font-bold text-foreground">
-                <Droplets className="w-4 h-4 text-sky-500" />
-                <span>{indoor.humidity}%</span>
-              </div>
-              <span className="text-base select-none" title={indoor.comfortLabel}>
+          {/* 室内ブロック */}
+          <div className="px-3 py-1.5 rounded-xl bg-muted/40 border border-primary/20 flex flex-col gap-0.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-foreground">室内</span>
+              <span className="text-sm select-none" title={indoor.comfortLabel}>
                 {indoor.comfortEmoji}
               </span>
+            </div>
+            <div className="flex items-center justify-around">
+              <div className="flex items-baseline gap-1 font-mono font-extrabold text-base text-foreground">
+                <Thermometer className="w-3.5 h-3.5 text-emerald-500 self-center" />
+                <span>{indoor.temperature.toFixed(1)}</span>
+                <span className="text-xs font-bold text-muted-foreground">℃</span>
+              </div>
+              <div className="flex items-baseline gap-1 font-mono font-extrabold text-base text-foreground">
+                <Droplets className="w-3.5 h-3.5 text-sky-500 self-center" />
+                <span>{indoor.humidity}</span>
+                <span className="text-xs font-bold text-muted-foreground">%</span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* 日の出・日の入 */}
-        <div className="flex items-center justify-around pt-2 border-t border-border/50 text-xs text-muted-foreground">
+        <div className="flex items-center justify-around pt-1.5 border-t border-border/50 text-xs text-muted-foreground">
           <div className="flex items-center gap-1.5 font-mono font-semibold">
             <Sunrise className="w-4 h-4 text-orange-400" />
             <span>{sunriseTime}</span>
