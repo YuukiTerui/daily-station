@@ -10,15 +10,28 @@ export interface CurrentWeather {
   weatherCode: number;
   condition: WeatherCondition;
   windSpeed: number;
+  windDirection: number;
+  windDirectionText: string;
   pressure: number;
   precipitation: number;
+  visibility: number;
+  visibilityText: string;
   isDay: boolean;
   time: string;
+}
+
+export interface AirQuality {
+  aqi: number;
+  aqiLabel: string;
+  pm25: number;
+  pm10: number;
+  pollenLabel: string;
 }
 
 export interface DailyForecast {
   date: string;
   dayOfWeek: string;
+  dayLabel?: string; // "今日" | "昨日" など
   weatherCode: number;
   condition: WeatherCondition;
   tempMax: number;
@@ -41,6 +54,7 @@ export interface HourlyForecast {
 export interface WeatherData {
   stationName: string;
   current: CurrentWeather;
+  airQuality: AirQuality;
   daily: DailyForecast[];
   hourly: HourlyForecast[];
   updatedAt: Date;

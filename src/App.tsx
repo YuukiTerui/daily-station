@@ -36,8 +36,13 @@ const DashboardContent: React.FC = () => {
         />
       }
     >
-      <LeftPane timeInfo={timeInfo} weather={weather} isLoading={isLoading} />
-      <CenterPane weather={weather} indoor={indoor} />
+      <LeftPane
+        timeInfo={timeInfo}
+        weather={weather}
+        indoor={indoor}
+        isLoading={isLoading}
+      />
+      <CenterPane weather={weather} />
       <RightPane
         dailyList={weather?.daily}
         hourlyList={weather?.hourly}

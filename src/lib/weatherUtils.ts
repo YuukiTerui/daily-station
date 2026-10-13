@@ -116,7 +116,6 @@ export function getWeatherCondition(code: number, isDay = true): WeatherConditio
 }
 
 export function formatTimeHour(timeString: string): string {
-  // ISO: 2026-10-13T16:00
   const date = new Date(timeString);
   return `${date.getHours().toString().padStart(2, '0')}:00`;
 }
@@ -124,10 +123,41 @@ export function formatTimeHour(timeString: string): string {
 export function formatDayOfWeek(dateString: string): string {
   const date = new Date(dateString);
   const days = ['日', '月', '火', '水', '木', '金', '土'];
+  return `${days[date.getDay()]}曜日`;
+}
+
+export function formatShortDayOfWeek(dateString: string): string {
+  const date = new Date(dateString);
+  const days = ['日', '月', '火', '水', '木', '金', '土'];
   return days[date.getDay()];
 }
 
-export function formatMonthDay(dateString: string): string {
-  const date = new Date(dateString);
-  return `${date.getMonth() + 1}/${date.getDate()}`;
+export function getWindDirectionText(degrees: number): string {
+  const directions = [
+    '北',
+    '北北東',
+    '北東',
+    '東北東',
+    '東',
+    '東南東',
+    '南東',
+    '南南東',
+    '南',
+    '南南西',
+    '南西',
+    '西南西',
+    '西',
+    '西北西',
+    '北西',
+    '北北西',
+  ];
+  const index = Math.round(degrees / 22.5) % 16;
+  return directions[index];
+}
+
+export function formatVisibility(meters: number): string {
+  if (meters >= 10000) {
+    return '>10km';
+  }
+  return `${Math.round(meters / 1000)}km`;
 }
