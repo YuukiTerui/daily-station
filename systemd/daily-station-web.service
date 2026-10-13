@@ -1,0 +1,17 @@
+[Unit]
+Description=Daily Station Web Service
+After=network.target
+
+[Service]
+Type=simple
+User=%I
+WorkingDirectory=/home/%I/daily-station
+ExecStart=/usr/bin/node scripts/serve.js
+Restart=always
+RestartSec=3
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=HOST=127.0.0.1
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Daily Station Kiosk
+Comment=Start Daily Station Weather Display in Kiosk Mode
+Exec=/bin/bash -c "cd $HOME/daily-station && ./scripts/kiosk.sh"
+Terminal=false
+StartupNotify=false
+X-GNOME-Autostart-enabled=true

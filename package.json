@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "serve": "node scripts/serve.js",
+    "kiosk": "./scripts/kiosk.sh",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
