@@ -31,40 +31,40 @@ export const LeftPane: React.FC<LeftPaneProps> = ({
     : '--:--';
 
   return (
-    <div className="w-[270px] h-full flex flex-col gap-2 p-1">
+    <div className="w-[268px] h-full flex flex-col gap-2">
       {/* 1. 時計 & 日付カード */}
-      <Card className="flex flex-col items-center justify-center p-2.5 bg-card/90 shadow-sm border-border/60">
-        <div className="text-[11px] font-medium text-muted-foreground mb-0.5">
+      <Card className="flex flex-col items-center justify-center p-2.5 bg-card/95 shadow-sm border-border/60">
+        <div className="text-sm font-semibold text-muted-foreground mb-0.5 whitespace-nowrap">
           {timeInfo.dateString} {timeInfo.shortDayOfWeekString}曜日
         </div>
         <div className="flex items-baseline gap-1 whitespace-nowrap">
           <span className="font-mono text-5xl font-extrabold tracking-tight text-foreground">
             {timeInfo.shortTimeString}
           </span>
-          <span className="font-mono text-xl font-semibold text-muted-foreground">
+          <span className="font-mono text-2xl font-bold text-muted-foreground">
             :{timeInfo.secondsString}
           </span>
         </div>
       </Card>
 
-      {/* 2. 今日の天気 & 屋内外温湿度 (SwitchBot風 統合カード) */}
-      <Card className="flex-1 flex flex-col justify-between p-3 bg-card/90 shadow-sm border-border/60">
+      {/* 2. 今日の天気 & 屋内外温湿度 (統合カード) */}
+      <Card className="flex-1 flex flex-col justify-between p-3 bg-card/95 shadow-sm border-border/60">
         {/* ヘッダー: 地点 & 天気概要 */}
-        <div className="flex items-center justify-between pb-1.5 border-b border-border/40">
-          <div className="flex items-center gap-1 text-xs font-semibold text-foreground">
+        <div className="flex items-center justify-between pb-2 border-b border-border/50">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
             <MapPin className="w-3.5 h-3.5 text-primary" />
             <span>{weather?.stationName || '東京'}</span>
           </div>
           {current ? (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 whitespace-nowrap">
               <WeatherIcon
                 name={current.condition.iconName}
                 className="w-4 h-4 text-primary"
               />
-              <span className="text-xs font-medium text-foreground">
+              <span className="text-xs font-semibold text-foreground">
                 {current.condition.label}
               </span>
-              <span className="text-xs font-mono font-semibold text-muted-foreground ml-1">
+              <span className="text-xs font-mono font-bold text-muted-foreground ml-1">
                 {todayForecast
                   ? `${todayForecast.tempMax}/${todayForecast.tempMin}℃`
                   : '--/--℃'}
@@ -77,51 +77,51 @@ export const LeftPane: React.FC<LeftPaneProps> = ({
           ) : null}
         </div>
 
-        {/* 屋外・屋内温湿度ブロック (SwitchBotスタイル) */}
-        <div className="flex flex-col gap-2 my-auto py-1">
+        {/* 屋外・屋内温湿度ブロック (フォントサイズとパディングを拡大して密度を最適化) */}
+        <div className="flex flex-col gap-2.5 my-auto py-1">
           {/* 屋外 */}
-          <div className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-muted/30">
-            <span className="text-xs font-semibold text-muted-foreground w-10">屋外</span>
+          <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-muted/40">
+            <span className="text-xs font-bold text-muted-foreground w-10">屋外</span>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1 text-xs font-mono font-bold text-foreground">
-                <Thermometer className="w-3.5 h-3.5 text-rose-500" />
+              <div className="flex items-center gap-1 text-sm font-mono font-bold text-foreground">
+                <Thermometer className="w-4 h-4 text-rose-500" />
                 <span>{current ? current.temperature.toFixed(1) : '--'}℃</span>
               </div>
-              <div className="flex items-center gap-1 text-xs font-mono font-bold text-foreground">
-                <Droplets className="w-3.5 h-3.5 text-sky-500" />
+              <div className="flex items-center gap-1 text-sm font-mono font-bold text-foreground">
+                <Droplets className="w-4 h-4 text-sky-500" />
                 <span>{current ? current.humidity : '--'}%</span>
               </div>
             </div>
           </div>
 
           {/* 室内 */}
-          <div className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-muted/40 border border-primary/20">
-            <span className="text-xs font-semibold text-foreground w-10">室内</span>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1 text-xs font-mono font-bold text-foreground">
-                <Thermometer className="w-3.5 h-3.5 text-emerald-500" />
+          <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-muted/50 border border-primary/20">
+            <span className="text-xs font-bold text-foreground w-10">室内</span>
+            <div className="flex items-center gap-3.5">
+              <div className="flex items-center gap-1 text-sm font-mono font-bold text-foreground">
+                <Thermometer className="w-4 h-4 text-emerald-500" />
                 <span>{indoor.temperature.toFixed(1)}℃</span>
               </div>
-              <div className="flex items-center gap-1 text-xs font-mono font-bold text-foreground">
-                <Droplets className="w-3.5 h-3.5 text-sky-500" />
+              <div className="flex items-center gap-1 text-sm font-mono font-bold text-foreground">
+                <Droplets className="w-4 h-4 text-sky-500" />
                 <span>{indoor.humidity}%</span>
               </div>
-              <span className="text-sm select-none" title={indoor.comfortLabel}>
+              <span className="text-base select-none" title={indoor.comfortLabel}>
                 {indoor.comfortEmoji}
               </span>
             </div>
           </div>
         </div>
 
-        {/* 日の出・日の入 (SwitchBotスタイル) */}
-        <div className="flex items-center justify-around pt-2 border-t border-border/40 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1.5 font-mono">
-            <Sunrise className="w-3.5 h-3.5 text-orange-400" />
+        {/* 日の出・日の入 */}
+        <div className="flex items-center justify-around pt-2 border-t border-border/50 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5 font-mono font-semibold">
+            <Sunrise className="w-4 h-4 text-orange-400" />
             <span>{sunriseTime}</span>
           </div>
           <span className="text-border">|</span>
-          <div className="flex items-center gap-1.5 font-mono">
-            <Sunset className="w-3.5 h-3.5 text-purple-400" />
+          <div className="flex items-center gap-1.5 font-mono font-semibold">
+            <Sunset className="w-4 h-4 text-purple-400" />
             <span>{sunsetTime}</span>
           </div>
         </div>
