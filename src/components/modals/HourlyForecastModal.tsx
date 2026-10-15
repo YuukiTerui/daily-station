@@ -28,9 +28,6 @@ export const HourlyForecastModal: React.FC<HourlyForecastModalProps> = ({
               <span>
                 {selectedDay.date} ({selectedDay.dayOfWeek})
               </span>
-              <span className="text-xs font-normal text-muted-foreground">
-                時間帯別詳細予報
-              </span>
             </DialogTitle>
             <div className="flex items-center gap-2 text-xs">
               <span className="text-rose-500 font-semibold">

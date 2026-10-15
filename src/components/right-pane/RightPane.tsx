@@ -29,9 +29,6 @@ export const RightPane: React.FC<RightPaneProps> = ({
             <CalendarDays className="w-3.5 h-3.5 text-primary" />
             <span>週間天気予報</span>
           </div>
-          <span className="text-[10px] text-muted-foreground font-medium">
-            タップで詳細
-          </span>
         </div>
 
         {/* 予報リスト (気温列を80pxに拡張し℃の潰れを完全解消) */}
@@ -43,13 +40,13 @@ export const RightPane: React.FC<RightPaneProps> = ({
           ) : (
             daysToShow.map((day, idx) => {
               const isToday = idx === 0;
-              const dayName = isToday ? '今日' : day.dayOfWeek;
+              const dayName = isToday ? 'Today' : day.dayOfWeek;
 
               const dayColor = isToday
                 ? 'text-primary font-black'
-                : day.dayOfWeek.startsWith('日')
+                : day.dayOfWeek === 'Sun'
                   ? 'text-rose-500 font-bold'
-                  : day.dayOfWeek.startsWith('土')
+                  : day.dayOfWeek === 'Sat'
                     ? 'text-sky-500 font-bold'
                     : 'text-foreground font-bold';
 
@@ -81,8 +78,8 @@ export const RightPane: React.FC<RightPaneProps> = ({
                     )}
                   </div>
 
-                  {/* 曜日 (14px 太字) */}
-                  <div className="text-sm shrink-0 w-11 text-center">
+                  {/* 曜日 (英語短縮系) */}
+                  <div className="text-sm shrink-0 w-11 text-center font-mono">
                     <span className={dayColor}>{dayName}</span>
                   </div>
 

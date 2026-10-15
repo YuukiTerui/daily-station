@@ -122,13 +122,13 @@ export function formatTimeHour(timeString: string): string {
 
 export function formatDayOfWeek(dateString: string): string {
   const date = new Date(dateString);
-  const days = ['日', '月', '火', '水', '木', '金', '土'];
-  return `${days[date.getDay()]}曜日`;
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  return days[date.getDay()];
 }
 
 export function formatShortDayOfWeek(dateString: string): string {
   const date = new Date(dateString);
-  const days = ['日', '月', '火', '水', '木', '金', '土'];
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   return days[date.getDay()];
 }
 

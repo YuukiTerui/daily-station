@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import type { WeatherData } from '@/types/weather';
-import { Wind, Compass, Sun, Umbrella, Eye, Gauge, Activity } from 'lucide-react';
+import { Wind, Compass, Sun, Umbrella, Eye, Gauge, Activity, Info } from 'lucide-react';
 
 interface CenterPaneProps {
   weather?: WeatherData;
@@ -14,7 +14,7 @@ export const CenterPane: React.FC<CenterPaneProps> = ({ weather }) => {
 
   return (
     <div className="w-[288px] h-full flex flex-col gap-2">
-      {/* 1. 空気質タイル (SwitchBot風 3カラム) */}
+      {/* 1. 空気質タイル (ホバーツールチップ付き) */}
       <Card className="p-2.5 bg-card/95 shadow-sm border-border/60">
         <div className="flex items-center justify-between mb-1 px-1">
           <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
@@ -28,22 +28,40 @@ export const CenterPane: React.FC<CenterPaneProps> = ({ weather }) => {
 
         <div className="grid grid-cols-3 gap-1.5 mt-1">
           {/* AQI */}
-          <div className="bg-muted/40 rounded-xl p-2 flex flex-col items-center justify-center">
-            <span className="text-[10px] text-muted-foreground font-medium">AQI</span>
+          <div className="relative group bg-muted/40 rounded-xl p-2 flex flex-col items-center justify-center cursor-help">
+            <div className="flex items-center gap-0.5">
+              <span className="text-[10px] text-muted-foreground font-medium">AQI</span>
+              <Info className="w-2.5 h-2.5 text-muted-foreground/60" />
+            </div>
             <span className="font-mono text-lg font-extrabold text-foreground mt-0.5">
               {airQuality?.aqi ?? 30}
             </span>
+
+            {/* Tooltip */}
+            <div className="pointer-events-none absolute -top-12 left-1/2 -translate-x-1/2 z-50 w-44 rounded-lg bg-popover/95 p-2 text-center text-[10px] font-medium text-popover-foreground shadow-md border border-border opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+              大気質指数 (0〜50: 非常に良い, 100以上: 要注意)
+            </div>
           </div>
+
           {/* PM2.5 */}
-          <div className="bg-muted/40 rounded-xl p-2 flex flex-col items-center justify-center">
-            <span className="text-[10px] text-muted-foreground font-medium">PM2.5</span>
+          <div className="relative group bg-muted/40 rounded-xl p-2 flex flex-col items-center justify-center cursor-help">
+            <div className="flex items-center gap-0.5">
+              <span className="text-[10px] text-muted-foreground font-medium">PM2.5</span>
+              <Info className="w-2.5 h-2.5 text-muted-foreground/60" />
+            </div>
             <div className="flex items-baseline mt-0.5">
               <span className="font-mono text-lg font-extrabold text-foreground">
                 {airQuality?.pm25 ?? 12}
               </span>
               <span className="text-[9px] text-muted-foreground ml-0.5">µg/m³</span>
             </div>
+
+            {/* Tooltip */}
+            <div className="pointer-events-none absolute -top-12 left-1/2 -translate-x-1/2 z-50 w-44 rounded-lg bg-popover/95 p-2 text-center text-[10px] font-medium text-popover-foreground shadow-md border border-border opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+              微小粒子状物質 (環境基準: 1日平均35µg/m³以下)
+            </div>
           </div>
+
           {/* 花粉 */}
           <div className="bg-muted/40 rounded-xl p-2 flex flex-col items-center justify-center">
             <span className="text-[10px] text-muted-foreground font-medium">花粉</span>
@@ -54,7 +72,7 @@ export const CenterPane: React.FC<CenterPaneProps> = ({ weather }) => {
         </div>
       </Card>
 
-      {/* 2. 気象詳細リスト (行パディングとフォントスケール最適化) */}
+      {/* 2. 気象詳細リスト */}
       <Card className="flex-1 p-2.5 bg-card/95 shadow-sm border-border/60 flex flex-col justify-between">
         <div className="flex flex-col justify-between h-full py-0.5 gap-1.5">
           {/* 風速 */}

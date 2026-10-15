@@ -29,14 +29,19 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   onSelectTab,
 }) => {
   const [isEventMode, setIsEventMode] = useState(false);
+  const [fade, setFade] = useState(true);
 
-  // 8秒ごとに「今日の一言」と「次の予定」を自動ローテーション
+  // 8秒ごとに「今日の一言」と「次の予定」をフェードイン・アウトで滑らかにローテーション
   useEffect(() => {
     if (!nextEvent) return;
-    const timer = setInterval(() => {
-      setIsEventMode((prev) => !prev);
+    const interval = setInterval(() => {
+      setFade(false); // フェードアウト
+      setTimeout(() => {
+        setIsEventMode((prev) => !prev);
+        setFade(true); // フェードイン
+      }, 300); // 300ms transition
     }, 8000);
-    return () => clearInterval(timer);
+    return () => clearInterval(interval);
   }, [nextEvent]);
 
   const dateObj = lastUpdated ? new Date(lastUpdated) : null;
@@ -55,41 +60,54 @@ export const StatusBar: React.FC<StatusBarProps> = ({
 
   const showEvent = Boolean(nextEvent && isEventMode);
 
+  const handleManualToggle = () => {
+    if (!nextEvent) return;
+    setFade(false);
+    setTimeout(() => {
+      setIsEventMode((prev) => !prev);
+      setFade(true);
+    }, 200);
+  };
+
   return (
     <footer className="w-full h-[42px] px-3 bg-card/95 border-t border-border flex items-center justify-between text-xs select-none">
-      {/* 左側: 今日の一言 / カレンダー予定 (自動切替) */}
+      {/* 左側: 今日の一言 / カレンダー予定 (滑らかなフェード切替) */}
       <div
-        className="flex items-center gap-2 max-w-[420px] truncate cursor-pointer transition-opacity"
-        onClick={() => {
-          if (nextEvent) setIsEventMode((prev) => !prev);
-        }}
+        className="flex items-center gap-2 max-w-[420px] truncate cursor-pointer"
+        onClick={handleManualToggle}
         title="クリックで今日の一言／予定を手動切り替え"
       >
-        {!showEvent ? (
-          <>
-            <span className="text-sm select-none shrink-0">{advice.emoji}</span>
-            <span className="text-muted-foreground text-[11px] truncate font-medium">
-              {advice.text}
-            </span>
-          </>
-        ) : nextEvent ? (
-          <>
-            <Calendar className="w-3.5 h-3.5 text-primary shrink-0" />
-            <span className="font-semibold text-foreground text-[11px] shrink-0">
-              次の予定:
-            </span>
-            <span className="text-muted-foreground text-[11px] truncate">
-              {formatEventTime(nextEvent)} - {nextEvent.summary}
-            </span>
-          </>
-        ) : (
-          <>
-            <MessageSquareHeart className="w-3.5 h-3.5 text-primary shrink-0" />
-            <span className="text-muted-foreground text-[11px] truncate">
-              直近の予定はありません
-            </span>
-          </>
-        )}
+        <div
+          className={`flex items-center gap-2 truncate transition-all duration-300 ease-in-out ${
+            fade ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1'
+          }`}
+        >
+          {!showEvent ? (
+            <>
+              <span className="text-sm select-none shrink-0">{advice.emoji}</span>
+              <span className="text-muted-foreground text-[11px] truncate font-medium">
+                {advice.text}
+              </span>
+            </>
+          ) : nextEvent ? (
+            <>
+              <Calendar className="w-3.5 h-3.5 text-primary shrink-0" />
+              <span className="font-semibold text-foreground text-[11px] shrink-0">
+                次の予定:
+              </span>
+              <span className="text-muted-foreground text-[11px] truncate">
+                {formatEventTime(nextEvent)} - {nextEvent.summary}
+              </span>
+            </>
+          ) : (
+            <>
+              <MessageSquareHeart className="w-3.5 h-3.5 text-primary shrink-0" />
+              <span className="text-muted-foreground text-[11px] truncate">
+                直近の予定はありません
+              </span>
+            </>
+          )}
+        </div>
       </div>
 
       {/* 中央: 画面切り替えインジケーター (ドット) */}
@@ -113,7 +131,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
       </div>
 
       {/* 右側: ステータスインジケーター & ナイトモード */}
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-2">
         {/* データ更新状況 */}
         <div className="flex items-center gap-1.5 text-muted-foreground text-[11px] whitespace-nowrap">
           <span className="relative flex h-2 w-2">
@@ -134,23 +152,18 @@ export const StatusBar: React.FC<StatusBarProps> = ({
           </button>
         </div>
 
-        {/* ナイトモードトグル */}
+        {/* ナイトモードトグル (アイコンのみ) */}
         <Button
           variant="ghost"
-          size="sm"
+          size="icon"
           onClick={onToggleNightMode}
-          className="h-7 px-2 flex items-center gap-1 text-[11px] hover:bg-muted"
+          className="h-7 w-7 rounded-full hover:bg-muted cursor-pointer"
+          title={isNightMode ? 'デイモードへ切替' : 'ナイトモードへ切替'}
         >
           {isNightMode ? (
-            <>
-              <Sun className="w-3.5 h-3.5 text-amber-500" />
-              <span>デイ</span>
-            </>
+            <Sun className="w-4 h-4 text-amber-500" />
           ) : (
-            <>
-              <Moon className="w-3.5 h-3.5 text-indigo-400" />
-              <span>ナイト</span>
-            </>
+            <Moon className="w-4 h-4 text-indigo-400" />
           )}
         </Button>
       </div>
