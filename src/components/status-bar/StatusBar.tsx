@@ -29,17 +29,22 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   onSelectTab,
 }) => {
   const [isEventMode, setIsEventMode] = useState(false);
-  const [fade, setFade] = useState(true);
+  const [animState, setAnimState] = useState<'visible' | 'flipping-out' | 'flipping-in'>(
+    'visible',
+  );
 
-  // 8秒ごとに「今日の一言」と「次の予定」をフェードイン・アウトで滑らかにローテーション
+  // 8秒ごとに「今日の一言」と「次の予定」を3Dフリップ回転アニメーションで滑らかに切り替え
   useEffect(() => {
     if (!nextEvent) return;
     const interval = setInterval(() => {
-      setFade(false); // フェードアウト
+      setAnimState('flipping-out');
       setTimeout(() => {
         setIsEventMode((prev) => !prev);
-        setFade(true); // フェードイン
-      }, 300); // 300ms transition
+        setAnimState('flipping-in');
+        setTimeout(() => {
+          setAnimState('visible');
+        }, 250);
+      }, 250);
     }, 8000);
     return () => clearInterval(interval);
   }, [nextEvent]);
@@ -62,25 +67,33 @@ export const StatusBar: React.FC<StatusBarProps> = ({
 
   const handleManualToggle = () => {
     if (!nextEvent) return;
-    setFade(false);
+    setAnimState('flipping-out');
     setTimeout(() => {
       setIsEventMode((prev) => !prev);
-      setFade(true);
-    }, 200);
+      setAnimState('flipping-in');
+      setTimeout(() => {
+        setAnimState('visible');
+      }, 250);
+    }, 250);
   };
 
+  const rotationClass =
+    animState === 'flipping-out'
+      ? 'rotate-x-90 opacity-0'
+      : animState === 'flipping-in'
+        ? '-rotate-x-90 opacity-0'
+        : 'rotate-x-0 opacity-100';
+
   return (
-    <footer className="w-full h-[42px] px-3 bg-card/95 border-t border-border flex items-center justify-between text-xs select-none">
-      {/* 左側: 今日の一言 / カレンダー予定 (滑らかなフェード切替) */}
+    <footer className="relative w-full h-[42px] px-3 bg-card/95 border-t border-border flex items-center justify-between text-xs select-none">
+      {/* 左側: 今日の一言 / カレンダー予定 (3D回転フリップアニメーション) */}
       <div
-        className="flex items-center gap-2 max-w-[420px] truncate cursor-pointer"
+        className="flex items-center gap-2 max-w-[420px] truncate cursor-pointer [perspective:1000px]"
         onClick={handleManualToggle}
         title="クリックで今日の一言／予定を手動切り替え"
       >
         <div
-          className={`flex items-center gap-2 truncate transition-all duration-300 ease-in-out ${
-            fade ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1'
-          }`}
+          className={`flex items-center gap-2 truncate transition-all duration-250 ease-out origin-center transform-gpu ${rotationClass}`}
         >
           {!showEvent ? (
             <>
@@ -110,8 +123,8 @@ export const StatusBar: React.FC<StatusBarProps> = ({
         </div>
       </div>
 
-      {/* 中央: 画面切り替えインジケーター (ドット) */}
-      <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-muted/40">
+      {/* 中央: 画面切り替えインジケーター (absolute固定配置で絶対にブレない) */}
+      <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 rounded-full bg-muted/40">
         <button
           type="button"
           onClick={() => onSelectTab('weather')}

@@ -29,32 +29,61 @@ export const App: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'weather' | 'calendar'>('weather');
 
-  // Swipe gesture handling
-  const touchStartX = useRef<number | null>(null);
-  const touchStartY = useRef<number | null>(null);
+  // Swipe / Drag gesture handling (Touch + Mouse drag)
+  const dragStartX = useRef<number | null>(null);
+  const dragStartY = useRef<number | null>(null);
+  const isDragging = useRef(false);
 
+  // Touch events
   const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
+    dragStartX.current = e.touches[0].clientX;
+    dragStartY.current = e.touches[0].clientY;
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current === null || touchStartY.current === null) return;
-    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
-    const deltaY = e.changedTouches[0].clientY - touchStartY.current;
+    if (dragStartX.current === null || dragStartY.current === null) return;
+    const deltaX = e.changedTouches[0].clientX - dragStartX.current;
+    const deltaY = e.changedTouches[0].clientY - dragStartY.current;
 
-    // Trigger if horizontal movement is > 50px and larger than vertical movement
-    if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
+    triggerSwipe(deltaX, deltaY);
+    dragStartX.current = null;
+    dragStartY.current = null;
+  };
+
+  // Mouse drag events (for desktop browser testing & touchscreens reporting mouse events)
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // Avoid triggering drag on interactive elements
+    const target = e.target as HTMLElement;
+    if (target.closest('button, input, [role="button"], a')) return;
+
+    dragStartX.current = e.clientX;
+    dragStartY.current = e.clientY;
+    isDragging.current = true;
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (!isDragging.current || dragStartX.current === null || dragStartY.current === null)
+      return;
+    const deltaX = e.clientX - dragStartX.current;
+    const deltaY = e.clientY - dragStartY.current;
+
+    triggerSwipe(deltaX, deltaY);
+    dragStartX.current = null;
+    dragStartY.current = null;
+    isDragging.current = false;
+  };
+
+  const triggerSwipe = (deltaX: number, deltaY: number) => {
+    // Trigger if horizontal movement is > 40px and larger than vertical movement
+    if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
       if (deltaX < 0) {
-        // Swipe left -> go to calendar
+        // Drag left -> show calendar
         setActiveTab('calendar');
       } else {
-        // Swipe right -> go to weather
+        // Drag right -> show weather
         setActiveTab('weather');
       }
     }
-    touchStartX.current = null;
-    touchStartY.current = null;
   };
 
   const handleRefresh = () => {
@@ -71,6 +100,8 @@ export const App: React.FC = () => {
     <div
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
       className="w-full h-full select-none"
     >
       <DashboardLayout
