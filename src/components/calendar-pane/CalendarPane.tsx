@@ -9,6 +9,7 @@ import {
   MapPin,
   ChevronLeft,
   ChevronRight,
+  ListTodo,
 } from 'lucide-react';
 
 interface CalendarPaneProps {
@@ -25,7 +26,10 @@ export const CalendarPane: React.FC<CalendarPaneProps> = ({
   // 左側: 月間カレンダーの月オフセット (0 = 今月, -1 = 先月, +1 = 来月...)
   const [currentMonthOffset, setCurrentMonthOffset] = useState(0);
 
-  // 右側: 日別予定の日オフセット (0 = 今日, +1 = 明日, -1 = 昨日...)
+  // 右側: 表示モード ('daily' = 日別予定, 'upcoming' = 今後の予定一覧)
+  const [viewMode, setViewMode] = useState<'daily' | 'upcoming'>('daily');
+
+  // 日別予定モード時の日オフセット (0 = 今日, +1 = 明日, -1 = 昨日...)
   const [dayOffset, setDayOffset] = useState(0);
 
   // --- 左側: 月間カレンダー計算 ---
@@ -88,7 +92,7 @@ export const CalendarPane: React.FC<CalendarPaneProps> = ({
     }),
   );
 
-  // --- 右側: 選択日計算 ---
+  // --- 右側: 日付 & 予定抽出 ---
   const targetDay = new Date();
   targetDay.setDate(targetDay.getDate() + dayOffset);
   const targetDayStr = `${targetDay.getFullYear()}-${String(targetDay.getMonth() + 1).padStart(2, '0')}-${String(targetDay.getDate()).padStart(2, '0')}`;
@@ -103,12 +107,28 @@ export const CalendarPane: React.FC<CalendarPaneProps> = ({
           ? `昨日 (${daysArr[targetDay.getDay()]})`
           : `${targetDay.getMonth() + 1}/${targetDay.getDate()} (${daysArr[targetDay.getDay()]})`;
 
-  // 選択日のみの予定を抽出
-  const dayEvents = events.filter((e) => {
+  // 1. 日別予定 (選択日のみ)
+  const dailyEvents = events.filter((e) => {
     const d = new Date(e.start);
     const eventDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     return eventDate === targetDayStr;
   });
+
+  // 2. 今後の予定 (今日以降の直近予定一覧)
+  const nowTimestamp = new Date().getTime() - 2 * 60 * 60 * 1000;
+  const upcomingEvents = events
+    .filter((e) => new Date(e.end).getTime() >= nowTimestamp)
+    .slice(0, 10);
+
+  const displayedEvents = viewMode === 'daily' ? dailyEvents : upcomingEvents;
+
+  const formatEventDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    const m = d.getMonth() + 1;
+    const date = d.getDate();
+    const day = daysArr[d.getDay()];
+    return `${m}/${date} (${day})`;
+  };
 
   const formatEventTime = (e: CalendarEvent) => {
     if (e.isAllDay) return '終日';
@@ -176,7 +196,8 @@ export const CalendarPane: React.FC<CalendarPaneProps> = ({
         <div className="grid grid-cols-7 gap-1 text-center font-mono text-xs flex-1 items-center">
           {days.map((item) => {
             const isToday = item.dateStr === todayStr;
-            const isSelectedDay = item.dateStr === targetDayStr && !isToday;
+            const isSelectedDay =
+              viewMode === 'daily' && item.dateStr === targetDayStr && !isToday;
             const hasEvent = eventDateSet.has(item.dateStr);
 
             return (
@@ -189,6 +210,7 @@ export const CalendarPane: React.FC<CalendarPaneProps> = ({
                     (clicked.getTime() - today.getTime()) / (24 * 60 * 60 * 1000),
                   );
                   setDayOffset(diffDays);
+                  setViewMode('daily'); // カレンダータップ時は自動で日別表示へ
                 }}
                 className={`relative flex flex-col items-center justify-center h-8 rounded-lg transition-colors cursor-pointer ${
                   isToday
@@ -222,60 +244,103 @@ export const CalendarPane: React.FC<CalendarPaneProps> = ({
         </div>
       </Card>
 
-      {/* 右ペイン: 日別予定タイムライン (420px) */}
+      {/* 右ペイン: 予定一覧 (420px) */}
       <Card className="flex-1 h-full p-3 flex flex-col bg-card/95 border-border/60 shadow-sm">
-        {/* ヘッダー: 「{日付} の予定」と左右送りナビゲーション */}
+        {/* ヘッダー: タイトル + ◀ [今日] ▶ (日別時のみ) + [日別 | 今後] 切替セグメント */}
         <div className="flex items-center justify-between pb-2 border-b border-border/50">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-primary" />
-            <span className="font-bold text-sm text-foreground">
-              {targetDayLabel} の予定
-            </span>
+          <div className="flex items-center gap-1.5">
+            {viewMode === 'daily' ? (
+              <>
+                <Clock className="w-4 h-4 text-primary" />
+                <span className="font-bold text-sm text-foreground">
+                  {targetDayLabel} の予定
+                </span>
+                {/* 日送り/戻しナビゲーション (日別モード時のみ表示) */}
+                <div className="flex items-center gap-0.5 ml-1">
+                  <button
+                    type="button"
+                    onClick={() => setDayOffset((prev) => prev - 1)}
+                    className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+                    title="前日"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                  {dayOffset !== 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setDayOffset(0)}
+                      className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+                    >
+                      今日
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setDayOffset((prev) => prev + 1)}
+                    className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+                    title="翌日"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <ListTodo className="w-4 h-4 text-primary" />
+                <span className="font-bold text-sm text-foreground">今後の予定一覧</span>
+              </>
+            )}
           </div>
 
-          <div className="flex items-center gap-1">
-            {dayOffset !== 0 && (
+          <div className="flex items-center gap-1.5">
+            {/* [日別 | 今後] セグメントコントロール */}
+            <div className="flex items-center rounded-lg bg-muted/60 p-0.5 text-xs font-semibold">
               <button
                 type="button"
-                onClick={() => setDayOffset(0)}
-                className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground hover:text-foreground cursor-pointer mr-0.5"
+                onClick={() => setViewMode('daily')}
+                className={`px-2.5 py-1 rounded-md transition cursor-pointer ${
+                  viewMode === 'daily'
+                    ? 'bg-card text-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
               >
-                今日
+                日別
               </button>
-            )}
-            <button
-              type="button"
-              onClick={() => setDayOffset((prev) => prev - 1)}
-              className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
-              title="前日"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setDayOffset((prev) => prev + 1)}
-              className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
-              title="翌日"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('upcoming')}
+                className={`px-2.5 py-1 rounded-md transition cursor-pointer ${
+                  viewMode === 'upcoming'
+                    ? 'bg-card text-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                今後
+              </button>
+            </div>
 
-            <Badge variant="outline" className="text-[10px] font-mono ml-1">
-              {isLoading ? '取得中...' : `${dayEvents.length} 件`}
+            <Badge variant="outline" className="text-[10px] font-mono">
+              {isLoading ? '取得中...' : `${displayedEvents.length} 件`}
             </Badge>
           </div>
         </div>
 
         {/* 予定リスト */}
         <div className="flex-1 overflow-y-auto flex flex-col gap-2 pt-2 pr-1">
-          {dayEvents.length === 0 ? (
+          {displayedEvents.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground text-xs gap-1.5">
               <CalendarIcon className="w-8 h-8 opacity-25" />
-              <span>この日の予定はありません</span>
+              <span>
+                {viewMode === 'daily'
+                  ? 'この日の予定はありません'
+                  : '直近の予定はありません'}
+              </span>
             </div>
           ) : (
-            dayEvents.map((e) => {
-              const isToday = targetDayStr === todayStr;
+            displayedEvents.map((e) => {
+              const eventDateStr = e.start.slice(0, 10);
+              const isToday = eventDateStr === todayStr;
+
               return (
                 <div
                   key={e.id}
@@ -286,9 +351,18 @@ export const CalendarPane: React.FC<CalendarPaneProps> = ({
                   }`}
                 >
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-foreground truncate max-w-[320px]">
+                    <span className="font-bold text-foreground truncate max-w-[280px]">
                       {e.summary}
                     </span>
+                    {/* 「今後」モードの時だけ日付バッジを表示（日別モード時は不要なので出さない） */}
+                    {viewMode === 'upcoming' && (
+                      <Badge
+                        variant={isToday ? 'default' : 'secondary'}
+                        className="text-[10px] shrink-0 font-semibold"
+                      >
+                        {formatEventDate(e.start)}
+                      </Badge>
+                    )}
                   </div>
                   <div className="flex items-center gap-3 text-[11px] text-muted-foreground font-mono">
                     <div className="flex items-center gap-1">
@@ -296,7 +370,7 @@ export const CalendarPane: React.FC<CalendarPaneProps> = ({
                       <span>{formatEventTime(e)}</span>
                     </div>
                     {e.location && (
-                      <div className="flex items-center gap-1 truncate max-w-[200px]">
+                      <div className="flex items-center gap-1 truncate max-w-[180px]">
                         <MapPin className="w-3 h-3 text-muted-foreground shrink-0" />
                         <span className="truncate">{e.location}</span>
                       </div>
