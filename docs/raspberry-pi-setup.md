@@ -39,16 +39,29 @@ corepack prepare pnpm@latest --activate
 
 ```bash
 cd ~
-git clone https://github.com/<YOUR_USER>/daily-station.git
+git clone https://github.com/YuukiTerui/daily-station.git
 cd daily-station
 
 # 依存関係インストール
 pnpm install
 
-# 環境変数の設定 (観測地点の座標など)
+# 環境変数の設定 (観測地点の座標・GoogleカレンダーURLなど)
 cp .env.example .env.local
 nano .env.local
+```
 
+#### Googleカレンダー連携の設定方法（iCal非公開アドレス）
+
+1. PCのブラウザで [Googleカレンダー](https://calendar.google.com/) を開きます。
+2. 左メニュー「マイカレンダー」から表示したいカレンダーの横の `︙` を押し、「設定と共有」を開きます。
+3. 画面下部の「カレンダーの統合」セクションにある **「iCal 形式の非公開アドレス」** のURLをコピーします。
+4. `.env.local` の `GOOGLE_CALENDAR_ICAL_URL` に貼り付けます。
+   ```bash
+   GOOGLE_CALENDAR_ICAL_URL="https://calendar.google.com/calendar/ical/xxxxxx%40group.calendar.google.com/private-xxxxxx/basic.ics"
+   ```
+   _(※ 未設定の場合はデモ用のモック予定が自動表示されます)_
+
+```bash
 # 本番ビルドの実行
 pnpm build
 ```

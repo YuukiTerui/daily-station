@@ -1,88 +1,130 @@
-import React, { useState, useMemo } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React, { useState, useRef } from 'react';
+import { useWeatherData } from '@/hooks/useWeatherData';
+import { useCurrentTime } from '@/hooks/useCurrentTime';
+import { useIndoorEnvironment } from '@/hooks/useIndoorEnvironment';
+import { useNightMode } from '@/hooks/useNightMode';
+import { useCalendarData } from '@/hooks/useCalendarData';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { SwipeableContainer } from '@/components/layout/SwipeableContainer';
 import { LeftPane } from '@/components/left-pane/LeftPane';
 import { CenterPane } from '@/components/center-pane/CenterPane';
 import { RightPane } from '@/components/right-pane/RightPane';
-import { CalendarView } from '@/components/calendar-view/CalendarView';
+import { CalendarPane } from '@/components/calendar-pane/CalendarPane';
 import { StatusBar } from '@/components/status-bar/StatusBar';
-import { useCurrentTime } from '@/hooks/useCurrentTime';
-import { useWeatherData } from '@/hooks/useWeatherData';
-import { useIndoorEnvironment } from '@/hooks/useIndoorEnvironment';
-import { useNightMode } from '@/hooks/useNightMode';
-import { useCalendarEvents } from '@/hooks/useCalendarEvents';
-import { getDailyTip } from '@/lib/dailyTip';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
-const DashboardContent: React.FC = () => {
-  const [activePageIndex, setActivePageIndex] = useState<number>(0);
+export const App: React.FC = () => {
+  const {
+    data: weather,
+    isLoading: isWeatherLoading,
+    refetch: refetchWeather,
+    isFetching: isWeatherFetching,
+  } = useWeatherData();
+  const {
+    data: calendarData,
+    isLoading: isCalendarLoading,
+    refetch: refetchCalendar,
+  } = useCalendarData();
   const timeInfo = useCurrentTime();
-  const { data: weather, isLoading, isFetching, refetch } = useWeatherData();
   const indoor = useIndoorEnvironment();
   const { isNightMode, toggleNightMode } = useNightMode();
-  const { nextEvent } = useCalendarEvents();
 
-  // 今日の一言を算出（1分ごとの shortTimeString 更新に合わせて再計算）
-  const dailyTip = useMemo(() => {
-    return getDailyTip(weather, indoor, new Date());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [weather, indoor, timeInfo.shortTimeString]);
+  const [activeTab, setActiveTab] = useState<'weather' | 'calendar'>('weather');
+
+  // Swipe gesture handling
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+    const deltaY = e.changedTouches[0].clientY - touchStartY.current;
+
+    // Trigger if horizontal movement is > 50px and larger than vertical movement
+    if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      if (deltaX < 0) {
+        // Swipe left -> go to calendar
+        setActiveTab('calendar');
+      } else {
+        // Swipe right -> go to weather
+        setActiveTab('weather');
+      }
+    }
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
+
+  const handleRefresh = () => {
+    refetchWeather();
+    refetchCalendar();
+  };
+
+  const nextEvent =
+    calendarData?.events && calendarData.events.length > 0
+      ? calendarData.events[0]
+      : null;
 
   return (
-    <DashboardLayout
-      statusBar={
-        <StatusBar
-          lastUpdated={weather?.updatedAt}
-          isNightMode={isNightMode}
-          onToggleNightMode={toggleNightMode}
-          onRefresh={() => refetch()}
-          isFetching={isFetching}
-          activePageIndex={activePageIndex}
-          onPageChange={setActivePageIndex}
-          dailyTip={dailyTip}
-          nextEvent={nextEvent}
-        />
-      }
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="w-full h-full select-none"
     >
-      <SwipeableContainer
-        activeIndex={activePageIndex}
-        onIndexChange={setActivePageIndex}
-      >
-        {/* Page 0: ウェザーステーション & スマートクロック */}
-        <div className="w-full h-full flex gap-2">
-          <LeftPane
-            timeInfo={timeInfo}
+      <DashboardLayout
+        statusBar={
+          <StatusBar
+            lastUpdated={weather?.updatedAt}
+            isNightMode={isNightMode}
+            onToggleNightMode={toggleNightMode}
+            onRefresh={handleRefresh}
+            isFetching={isWeatherFetching || isCalendarLoading}
+            nextEvent={nextEvent}
             weather={weather}
-            indoor={indoor}
-            isLoading={isLoading}
+            activeTab={activeTab}
+            onSelectTab={setActiveTab}
           />
-          <CenterPane weather={weather} />
-          <RightPane
-            dailyList={weather?.daily}
-            hourlyList={weather?.hourly}
-            isLoading={isLoading}
-          />
-        </div>
+        }
+      >
+        <div className="relative w-[800px] h-[438px] overflow-hidden">
+          <div
+            className="flex w-[1600px] h-[438px] transition-transform duration-300 ease-in-out"
+            style={{
+              transform:
+                activeTab === 'weather' ? 'translateX(0px)' : 'translateX(-800px)',
+            }}
+          >
+            {/* 画面1: 天気ダッシュボード */}
+            <div className="w-[800px] h-[438px] flex gap-2 px-2.5 pt-2 pb-1.5 shrink-0">
+              <LeftPane
+                timeInfo={timeInfo}
+                weather={weather}
+                indoor={indoor}
+                isLoading={isWeatherLoading}
+              />
+              <CenterPane weather={weather} />
+              <RightPane
+                dailyList={weather?.daily}
+                hourlyList={weather?.hourly}
+                isLoading={isWeatherLoading}
+              />
+            </div>
 
-        {/* Page 1: カレンダー & スケジュール */}
-        <CalendarView timeInfo={timeInfo} weather={weather} />
-      </SwipeableContainer>
-    </DashboardLayout>
+            {/* 画面2: カレンダーダッシュボード */}
+            <div className="w-[800px] h-[438px] shrink-0">
+              <CalendarPane
+                events={calendarData?.events || []}
+                timeInfo={timeInfo}
+                isLoading={isCalendarLoading}
+              />
+            </div>
+          </div>
+        </div>
+      </DashboardLayout>
+    </div>
   );
 };
 
-export default function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <DashboardContent />
-    </QueryClientProvider>
-  );
-}
+export default App;

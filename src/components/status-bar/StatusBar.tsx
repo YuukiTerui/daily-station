@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, RefreshCw, Calendar as CalendarIcon } from 'lucide-react';
-import type { DailyTip } from '@/lib/dailyTip';
-import type { CalendarEvent } from '@/hooks/useCalendarEvents';
+import { Calendar, Moon, Sun, RefreshCw, MessageSquareHeart } from 'lucide-react';
+import type { CalendarEvent } from '@/types/calendar';
+import type { WeatherData } from '@/types/weather';
+import { getDailyAdvice } from '@/lib/dailyAdvice';
 
 interface StatusBarProps {
   lastUpdated?: Date | string;
@@ -10,10 +11,10 @@ interface StatusBarProps {
   onToggleNightMode: () => void;
   onRefresh: () => void;
   isFetching: boolean;
-  activePageIndex: number;
-  onPageChange: (pageIndex: number) => void;
-  dailyTip: DailyTip;
-  nextEvent?: CalendarEvent;
+  nextEvent?: CalendarEvent | null;
+  weather?: WeatherData;
+  activeTab: 'weather' | 'calendar';
+  onSelectTab: (tab: 'weather' | 'calendar') => void;
 }
 
 export const StatusBar: React.FC<StatusBarProps> = ({
@@ -22,20 +23,21 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   onToggleNightMode,
   onRefresh,
   isFetching,
-  activePageIndex,
-  onPageChange,
-  dailyTip,
   nextEvent,
+  weather,
+  activeTab,
+  onSelectTab,
 }) => {
-  const [showEventInTipMode, setShowEventInTipMode] = useState(false);
+  const [isEventMode, setIsEventMode] = useState(false);
 
-  // 12秒ごとに「今日の一言」と「直近予定」を穏やかにクロスフェード
+  // 8秒ごとに「今日の一言」と「次の予定」を自動ローテーション
   useEffect(() => {
+    if (!nextEvent) return;
     const timer = setInterval(() => {
-      setShowEventInTipMode((prev) => !prev);
-    }, 12000);
+      setIsEventMode((prev) => !prev);
+    }, 8000);
     return () => clearInterval(timer);
-  }, []);
+  }, [nextEvent]);
 
   const dateObj = lastUpdated ? new Date(lastUpdated) : null;
   const updatedTimeString =
@@ -43,74 +45,82 @@ export const StatusBar: React.FC<StatusBarProps> = ({
       ? `${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`
       : '--:--';
 
+  const advice = getDailyAdvice(weather);
+
+  const formatEventTime = (event: CalendarEvent) => {
+    if (event.isAllDay) return '終日';
+    const s = new Date(event.start);
+    return `${s.getHours().toString().padStart(2, '0')}:${s.getMinutes().toString().padStart(2, '0')}`;
+  };
+
+  const showEvent = Boolean(nextEvent && isEventMode);
+
   return (
     <footer className="w-full h-[42px] px-3 bg-card/95 border-t border-border flex items-center justify-between text-xs select-none">
-      {/* 左側: 今日の一言 / カレンダー予定の切り替え表示 (最大 440px) */}
+      {/* 左側: 今日の一言 / カレンダー予定 (自動切替) */}
       <div
-        className="flex items-center gap-2 max-w-[440px] truncate cursor-pointer hover:opacity-80 transition-opacity"
-        onClick={() => setShowEventInTipMode((prev) => !prev)}
-        title="タップで一言と予定を切り替え"
+        className="flex items-center gap-2 max-w-[420px] truncate cursor-pointer transition-opacity"
+        onClick={() => {
+          if (nextEvent) setIsEventMode((prev) => !prev);
+        }}
+        title="クリックで今日の一言／予定を手動切り替え"
       >
-        {activePageIndex === 1 || showEventInTipMode ? (
-          // カレンダー予定モード
-          <div className="flex items-center gap-1.5 truncate animate-in fade-in duration-300">
-            <CalendarIcon className="w-3.5 h-3.5 text-primary shrink-0" />
-            <span className="font-bold text-foreground text-[11px] shrink-0">
+        {!showEvent ? (
+          <>
+            <span className="text-sm select-none shrink-0">{advice.emoji}</span>
+            <span className="text-muted-foreground text-[11px] truncate font-medium">
+              {advice.text}
+            </span>
+          </>
+        ) : nextEvent ? (
+          <>
+            <Calendar className="w-3.5 h-3.5 text-primary shrink-0" />
+            <span className="font-semibold text-foreground text-[11px] shrink-0">
               次の予定:
             </span>
             <span className="text-muted-foreground text-[11px] truncate">
-              {nextEvent
-                ? `${nextEvent.startTime} - ${nextEvent.title}`
-                : '本日の予定はありません'}
+              {formatEventTime(nextEvent)} - {nextEvent.summary}
             </span>
-          </div>
+          </>
         ) : (
-          // 今日の一言モード
-          <div className="flex items-center gap-1.5 truncate animate-in fade-in duration-300">
-            <span className="text-sm shrink-0 leading-none">{dailyTip.icon}</span>
-            <span className="font-bold text-foreground text-[11px] shrink-0 flex items-center gap-1">
-              今日の一言:
+          <>
+            <MessageSquareHeart className="w-3.5 h-3.5 text-primary shrink-0" />
+            <span className="text-muted-foreground text-[11px] truncate">
+              直近の予定はありません
             </span>
-            <span className="text-muted-foreground text-[11px] truncate font-medium">
-              {dailyTip.message}
-            </span>
-          </div>
+          </>
         )}
       </div>
 
-      {/* 中央: ページインジケーター（スワイプ・クリック両対応） */}
-      <div className="flex items-center gap-1.5">
+      {/* 中央: 画面切り替えインジケーター (ドット) */}
+      <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-muted/40">
         <button
           type="button"
-          onClick={() => onPageChange(0)}
+          onClick={() => onSelectTab('weather')}
           className={`h-2 rounded-full transition-all cursor-pointer ${
-            activePageIndex === 0
-              ? 'w-5 bg-primary'
-              : 'w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'
+            activeTab === 'weather' ? 'w-5 bg-primary' : 'w-2 bg-muted-foreground/40'
           }`}
-          title="ウェザーステーション"
+          title="ウェザー画面"
         />
         <button
           type="button"
-          onClick={() => onPageChange(1)}
+          onClick={() => onSelectTab('calendar')}
           className={`h-2 rounded-full transition-all cursor-pointer ${
-            activePageIndex === 1
-              ? 'w-5 bg-primary'
-              : 'w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'
+            activeTab === 'calendar' ? 'w-5 bg-primary' : 'w-2 bg-muted-foreground/40'
           }`}
-          title="カレンダー & スケジュール"
+          title="カレンダー画面"
         />
       </div>
 
       {/* 右側: ステータスインジケーター & ナイトモード */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5">
         {/* データ更新状況 */}
         <div className="flex items-center gap-1.5 text-muted-foreground text-[11px] whitespace-nowrap">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
           </span>
-          <span className="font-mono">{updatedTimeString} 更新</span>
+          <span className="font-mono">{updatedTimeString}</span>
           <button
             type="button"
             onClick={onRefresh}
