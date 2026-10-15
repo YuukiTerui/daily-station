@@ -21,7 +21,10 @@ export const HourlyForecastModal: React.FC<HourlyForecastModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-[700px] w-[90vw] p-4 bg-background border border-border">
+      <DialogContent
+        showCloseButton={false}
+        className="max-w-[700px] w-[90vw] p-4 bg-background border border-border"
+      >
         <DialogHeader className="pb-2 border-b border-border">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-base font-bold flex items-center gap-2">
