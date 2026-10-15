@@ -19,10 +19,19 @@ export const HourlyForecastModal: React.FC<HourlyForecastModalProps> = ({
 }) => {
   if (!selectedDay) return null;
 
+  // モーダル内および横スクロール領域でのタッチ・ドラッグイベントが親（App.tsxの画面スワイプ）へ伝播するのを防ぐ
+  const stopPropagation = (e: React.TouchEvent | React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         showCloseButton={false}
+        onTouchStart={stopPropagation}
+        onTouchEnd={stopPropagation}
+        onMouseDown={stopPropagation}
+        onMouseUp={stopPropagation}
         className="max-w-[700px] w-[90vw] p-4 bg-background border border-border"
       >
         <DialogHeader className="pb-2 border-b border-border">
@@ -44,7 +53,13 @@ export const HourlyForecastModal: React.FC<HourlyForecastModalProps> = ({
         </DialogHeader>
 
         {/* 横スクロール対応の時間別リスト */}
-        <div className="flex gap-2 overflow-x-auto py-2 px-1 scrollbar-thin">
+        <div
+          onTouchStart={stopPropagation}
+          onTouchEnd={stopPropagation}
+          onMouseDown={stopPropagation}
+          onMouseUp={stopPropagation}
+          className="flex gap-2 overflow-x-auto py-2 px-1 scrollbar-thin overscroll-contain select-none"
+        >
           {hourlyList.map((hour, idx) => (
             <div
               key={idx}

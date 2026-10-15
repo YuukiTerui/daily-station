@@ -34,8 +34,20 @@ export const App: React.FC = () => {
   const dragStartY = useRef<number | null>(null);
   const isDragging = useRef(false);
 
+  // Helper to check if event originates from within a modal or interactive element
+  const shouldIgnoreSwipe = (target: EventTarget | null) => {
+    if (!target || !(target instanceof HTMLElement)) return false;
+    // Radix UI modal dialog or overlay
+    return Boolean(
+      target.closest(
+        '[data-slot="dialog-content"], [data-slot="dialog-overlay"], [role="dialog"], button, input, [role="button"], a',
+      ),
+    );
+  };
+
   // Touch events
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (shouldIgnoreSwipe(e.target)) return;
     dragStartX.current = e.touches[0].clientX;
     dragStartY.current = e.touches[0].clientY;
   };
@@ -50,11 +62,9 @@ export const App: React.FC = () => {
     dragStartY.current = null;
   };
 
-  // Mouse drag events (for desktop browser testing & touchscreens reporting mouse events)
+  // Mouse drag events
   const handleMouseDown = (e: React.MouseEvent) => {
-    // Avoid triggering drag on interactive elements
-    const target = e.target as HTMLElement;
-    if (target.closest('button, input, [role="button"], a')) return;
+    if (shouldIgnoreSwipe(e.target)) return;
 
     dragStartX.current = e.clientX;
     dragStartY.current = e.clientY;
