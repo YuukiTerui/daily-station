@@ -10,6 +10,8 @@ import { CenterPane } from '@/components/center-pane/CenterPane';
 import { RightPane } from '@/components/right-pane/RightPane';
 import { CalendarPane } from '@/components/calendar-pane/CalendarPane';
 import { StatusBar } from '@/components/status-bar/StatusBar';
+import { RainAmbient } from '@/components/common/RainAmbient';
+import { RadarModal } from '@/components/modals/RadarModal';
 
 export const App: React.FC = () => {
   const {
@@ -28,6 +30,7 @@ export const App: React.FC = () => {
   const { isNightMode, toggleNightMode } = useNightMode();
 
   const [activeTab, setActiveTab] = useState<'weather' | 'calendar'>('weather');
+  const [isRadarOpen, setIsRadarOpen] = useState(false);
 
   // Swipe / Drag gesture handling (Touch + Mouse drag)
   const dragStartX = useRef<number | null>(null);
@@ -37,7 +40,6 @@ export const App: React.FC = () => {
   // Helper to check if event originates from within a modal or interactive element
   const shouldIgnoreSwipe = (target: EventTarget | null) => {
     if (!target || !(target instanceof HTMLElement)) return false;
-    // Radix UI modal dialog or overlay
     return Boolean(
       target.closest(
         '[data-slot="dialog-content"], [data-slot="dialog-overlay"], [role="dialog"], button, input, [role="button"], a',
@@ -84,13 +86,10 @@ export const App: React.FC = () => {
   };
 
   const triggerSwipe = (deltaX: number, deltaY: number) => {
-    // Trigger if horizontal movement is > 40px and larger than vertical movement
     if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
       if (deltaX < 0) {
-        // Drag left -> show calendar
         setActiveTab('calendar');
       } else {
-        // Drag right -> show weather
         setActiveTab('weather');
       }
     }
@@ -112,8 +111,14 @@ export const App: React.FC = () => {
       onTouchEnd={handleTouchEnd}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
-      className="w-full h-full select-none"
+      className="relative w-full h-full select-none"
     >
+      {/* 雨の日アンビエントエフェクト（背景で控えめに雨粒が落ちる） */}
+      <RainAmbient
+        weatherCode={weather?.current.weatherCode}
+        precipitation={weather?.current.precipitation}
+      />
+
       <DashboardLayout
         statusBar={
           <StatusBar
@@ -126,6 +131,7 @@ export const App: React.FC = () => {
             weather={weather}
             activeTab={activeTab}
             onSelectTab={setActiveTab}
+            onOpenRadar={() => setIsRadarOpen(true)}
           />
         }
       >
@@ -164,6 +170,9 @@ export const App: React.FC = () => {
           </div>
         </div>
       </DashboardLayout>
+
+      {/* 雨雲レーダーモーダル */}
+      <RadarModal isOpen={isRadarOpen} onClose={() => setIsRadarOpen(false)} />
     </div>
   );
 };

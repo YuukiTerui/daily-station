@@ -763,3 +763,35 @@
     @apply font-sans;
   }
 }
+
+/* Ambient Rain Animation */
+@keyframes rain-fall {
+  0% {
+    transform: translateY(-20px) skewX(-15deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: var(--rain-opacity, 0.3);
+  }
+  90% {
+    opacity: var(--rain-opacity, 0.3);
+  }
+  100% {
+    transform: translateY(450px) skewX(-15deg);
+    opacity: 0;
+  }
+}
+
+.rain-drop {
+  position: absolute;
+  top: -20px;
+  width: 1.5px;
+  height: 24px;
+  background: linear-gradient(to bottom, transparent, rgba(14, 165, 233, 0.5));
+  border-radius: 9999px;
+  animation: rain-fall linear infinite;
+}
+
+.dark .rain-drop {
+  background: linear-gradient(to bottom, transparent, rgba(56, 189, 248, 0.35));
+}

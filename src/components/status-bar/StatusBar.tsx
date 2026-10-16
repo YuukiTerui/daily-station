@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Calendar, Moon, Sun, RefreshCw, MessageSquareHeart } from 'lucide-react';
+import {
+  Calendar,
+  Moon,
+  Sun,
+  RefreshCw,
+  MessageSquareHeart,
+  CloudRain,
+} from 'lucide-react';
 import type { CalendarEvent } from '@/types/calendar';
 import type { WeatherData } from '@/types/weather';
 import { getDailyAdvice } from '@/lib/dailyAdvice';
@@ -15,6 +22,7 @@ interface StatusBarProps {
   weather?: WeatherData;
   activeTab: 'weather' | 'calendar';
   onSelectTab: (tab: 'weather' | 'calendar') => void;
+  onOpenRadar?: () => void;
 }
 
 export const StatusBar: React.FC<StatusBarProps> = ({
@@ -27,6 +35,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   weather,
   activeTab,
   onSelectTab,
+  onOpenRadar,
 }) => {
   const [isEventMode, setIsEventMode] = useState(false);
   const [animState, setAnimState] = useState<'visible' | 'flipping-out' | 'flipping-in'>(
@@ -143,8 +152,21 @@ export const StatusBar: React.FC<StatusBarProps> = ({
         />
       </div>
 
-      {/* 右側: ステータスインジケーター & ナイトモード */}
+      {/* 右側: 雨雲レーダーボタン & ステータスインジケーター & ナイトモード */}
       <div className="flex items-center gap-2">
+        {/* 雨雲レーダーボタン */}
+        {onOpenRadar && (
+          <button
+            type="button"
+            onClick={onOpenRadar}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-sky-400 font-semibold text-[11px] transition cursor-pointer"
+            title="雨雲レーダーを表示"
+          >
+            <CloudRain className="w-3.5 h-3.5" />
+            <span>雨雲</span>
+          </button>
+        )}
+
         {/* データ更新状況 */}
         <div className="flex items-center gap-1.5 text-muted-foreground text-[11px] whitespace-nowrap">
           <span className="relative flex h-2 w-2">

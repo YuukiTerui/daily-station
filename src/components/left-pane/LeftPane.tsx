@@ -5,7 +5,8 @@ import { WeatherIcon } from '@/components/common/WeatherIcon';
 import type { CurrentTimeInfo } from '@/hooks/useCurrentTime';
 import type { WeatherData } from '@/types/weather';
 import type { IndoorEnvironmentData } from '@/hooks/useIndoorEnvironment';
-import { MapPin, Thermometer, Droplets, Sunrise, Sunset } from 'lucide-react';
+import { MapPin, Thermometer, Droplets } from 'lucide-react';
+import { SunProgress } from './SunProgress';
 
 interface LeftPaneProps {
   timeInfo: CurrentTimeInfo;
@@ -22,13 +23,6 @@ export const LeftPane: React.FC<LeftPaneProps> = ({
 }) => {
   const current = weather?.current;
   const todayForecast = weather?.daily[0];
-
-  const sunriseTime = todayForecast?.sunrise
-    ? todayForecast.sunrise.split('T')[1] || '--:--'
-    : '--:--';
-  const sunsetTime = todayForecast?.sunset
-    ? todayForecast.sunset.split('T')[1] || '--:--'
-    : '--:--';
 
   return (
     <div className="w-[268px] h-full flex flex-col gap-2">
@@ -47,7 +41,7 @@ export const LeftPane: React.FC<LeftPaneProps> = ({
         </div>
       </Card>
 
-      {/* 2. 今日の天気 & 屋内外温湿度 (2段ブロック構造で空間を自然に充填) */}
+      {/* 2. 今日の天気 & 屋内外温湿度 & 太陽プログレス */}
       <Card className="flex-1 flex flex-col justify-between p-3 bg-card/95 shadow-sm border-border/60">
         {/* ヘッダー: 地点 & 天気概要 */}
         <div className="flex items-center justify-between pb-1.5 border-b border-border/50">
@@ -77,7 +71,7 @@ export const LeftPane: React.FC<LeftPaneProps> = ({
           ) : null}
         </div>
 
-        {/* 屋外・屋内温湿度ブロック (2段構造: ラベルを上段にし、温度と湿度をゆったり配置) */}
+        {/* 屋外・屋内温湿度ブロック (2段構造) */}
         <div className="flex flex-col gap-2 my-auto py-0.5">
           {/* 屋外ブロック */}
           <div className="px-3 py-1.5 rounded-xl bg-muted/30 flex flex-col gap-0.5">
@@ -119,18 +113,8 @@ export const LeftPane: React.FC<LeftPaneProps> = ({
           </div>
         </div>
 
-        {/* 日の出・日の入 */}
-        <div className="flex items-center justify-around pt-1.5 border-t border-border/50 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1.5 font-mono font-semibold">
-            <Sunrise className="w-4 h-4 text-orange-400" />
-            <span>{sunriseTime}</span>
-          </div>
-          <span className="text-border">|</span>
-          <div className="flex items-center gap-1.5 font-mono font-semibold">
-            <Sunset className="w-4 h-4 text-purple-400" />
-            <span>{sunsetTime}</span>
-          </div>
-        </div>
+        {/* 日の出・日の入り 太陽プログレスビジュアル */}
+        <SunProgress sunrise={todayForecast?.sunrise} sunset={todayForecast?.sunset} />
       </Card>
     </div>
   );
