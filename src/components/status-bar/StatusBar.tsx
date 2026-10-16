@@ -7,6 +7,7 @@ import {
   RefreshCw,
   MessageSquareHeart,
   CloudRain,
+  Droplets,
 } from 'lucide-react';
 import type { CalendarEvent } from '@/types/calendar';
 import type { WeatherData } from '@/types/weather';
@@ -23,6 +24,8 @@ interface StatusBarProps {
   activeTab: 'weather' | 'calendar';
   onSelectTab: (tab: 'weather' | 'calendar') => void;
   onOpenRadar?: () => void;
+  forceRain?: boolean;
+  onToggleRain?: () => void;
 }
 
 export const StatusBar: React.FC<StatusBarProps> = ({
@@ -36,6 +39,8 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   activeTab,
   onSelectTab,
   onOpenRadar,
+  forceRain = false,
+  onToggleRain,
 }) => {
   const [isEventMode, setIsEventMode] = useState(false);
   const [animState, setAnimState] = useState<'visible' | 'flipping-out' | 'flipping-in'>(
@@ -97,7 +102,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
     <footer className="relative w-full h-[42px] px-3 bg-card/95 border-t border-border flex items-center justify-between text-xs select-none">
       {/* 左側: 今日の一言 / カレンダー予定 (3D回転フリップアニメーション) */}
       <div
-        className="flex items-center gap-2 max-w-[420px] truncate cursor-pointer [perspective:1000px]"
+        className="flex items-center gap-2 max-w-[380px] truncate cursor-pointer [perspective:1000px]"
         onClick={handleManualToggle}
         title="クリックで今日の一言／予定を手動切り替え"
       >
@@ -152,8 +157,25 @@ export const StatusBar: React.FC<StatusBarProps> = ({
         />
       </div>
 
-      {/* 右側: 雨雲レーダーボタン & ステータスインジケーター & ナイトモード */}
-      <div className="flex items-center gap-2">
+      {/* 右側: 雨演出 / 雨雲レーダー / 更新 / ナイトモード */}
+      <div className="flex items-center gap-1.5">
+        {/* 雨演出プレビュー（タッチで簡単にオン/オフを試せる） */}
+        {onToggleRain && (
+          <button
+            type="button"
+            onClick={onToggleRain}
+            className={`flex items-center gap-1 px-2 py-1 rounded-lg font-semibold text-[11px] transition cursor-pointer ${
+              forceRain
+                ? 'bg-sky-500 text-white shadow-sm'
+                : 'bg-muted/60 text-muted-foreground hover:text-foreground'
+            }`}
+            title="雨エフェクト演出の表示切替"
+          >
+            <Droplets className="w-3.5 h-3.5" />
+            <span>{forceRain ? '雨演出 ON' : '雨演出'}</span>
+          </button>
+        )}
+
         {/* 雨雲レーダーボタン */}
         {onOpenRadar && (
           <button

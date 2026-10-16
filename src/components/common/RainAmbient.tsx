@@ -3,7 +3,7 @@ import React from 'react';
 interface RainAmbientProps {
   weatherCode?: number;
   precipitation?: number;
-  forceRain?: boolean; // 動作確認・デモ用プロップス
+  forceRain?: boolean;
 }
 
 export const RainAmbient: React.FC<RainAmbientProps> = ({
@@ -11,7 +11,6 @@ export const RainAmbient: React.FC<RainAmbientProps> = ({
   precipitation = 0,
   forceRain = false,
 }) => {
-  // 雨判定: WMOコード 51〜67, 80〜82, 95〜99 または 降水量 > 0.1mm または forceRain
   const isRaining =
     forceRain ||
     precipitation > 0.1 ||
@@ -21,23 +20,34 @@ export const RainAmbient: React.FC<RainAmbientProps> = ({
 
   if (!isRaining) return null;
 
-  // 12本の控えめな雨粒ストリーク
+  // 画面全体(800x480)にバランスよく降る雨粒（幅2.5px、長さ46px、前面表示）
   const drops = [
-    { left: '8%', delay: '0s', duration: '1.2s', opacity: 0.25 },
-    { left: '16%', delay: '0.4s', duration: '1.4s', opacity: 0.15 },
-    { left: '25%', delay: '0.8s', duration: '1.1s', opacity: 0.3 },
-    { left: '33%', delay: '0.2s', duration: '1.3s', opacity: 0.2 },
-    { left: '42%', delay: '0.9s', duration: '1.5s', opacity: 0.18 },
-    { left: '50%', delay: '0.1s', duration: '1.2s', opacity: 0.28 },
-    { left: '58%', delay: '0.6s', duration: '1.3s', opacity: 0.22 },
-    { left: '67%', delay: '0.3s', duration: '1.1s', opacity: 0.25 },
-    { left: '75%', delay: '0.7s', duration: '1.4s', opacity: 0.18 },
-    { left: '83%', delay: '0.5s', duration: '1.2s', opacity: 0.3 },
-    { left: '92%', delay: '0.2s', duration: '1.5s', opacity: 0.2 },
+    { left: '3%', delay: '0s', duration: '0.8s', opacity: 0.8 },
+    { left: '7%', delay: '0.35s', duration: '0.95s', opacity: 0.65 },
+    { left: '12%', delay: '0.7s', duration: '0.75s', opacity: 0.85 },
+    { left: '16%', delay: '0.15s', duration: '0.9s', opacity: 0.7 },
+    { left: '21%', delay: '0.5s', duration: '0.85s', opacity: 0.75 },
+    { left: '26%', delay: '0.85s', duration: '1.0s', opacity: 0.65 },
+    { left: '30%', delay: '0.25s', duration: '0.8s', opacity: 0.9 },
+    { left: '35%', delay: '0.6s', duration: '0.95s', opacity: 0.75 },
+    { left: '40%', delay: '0.05s', duration: '0.75s', opacity: 0.85 },
+    { left: '44%', delay: '0.4s', duration: '0.9s', opacity: 0.7 },
+    { left: '49%', delay: '0.75s', duration: '0.85s', opacity: 0.8 },
+    { left: '53%', delay: '0.2s', duration: '1.0s', opacity: 0.65 },
+    { left: '58%', delay: '0.55s', duration: '0.8s', opacity: 0.85 },
+    { left: '62%', delay: '0.9s', duration: '0.95s', opacity: 0.7 },
+    { left: '67%', delay: '0.1s', duration: '0.75s', opacity: 0.9 },
+    { left: '71%', delay: '0.45s', duration: '0.9s', opacity: 0.75 },
+    { left: '76%', delay: '0.8s', duration: '0.85s', opacity: 0.65 },
+    { left: '81%', delay: '0.3s', duration: '1.0s', opacity: 0.85 },
+    { left: '85%', delay: '0.65s', duration: '0.8s', opacity: 0.75 },
+    { left: '90%', delay: '0.15s', duration: '0.9s', opacity: 0.7 },
+    { left: '94%', delay: '0.5s', duration: '0.85s', opacity: 0.8 },
+    { left: '98%', delay: '0.25s', duration: '0.95s', opacity: 0.75 },
   ];
 
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
+    <div className="pointer-events-none fixed inset-0 overflow-hidden z-20">
       {drops.map((drop, i) => (
         <span
           key={i}

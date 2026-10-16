@@ -765,33 +765,45 @@
 }
 
 /* Ambient Rain Animation */
-@keyframes rain-fall {
+@keyframes rain-fall-visible {
   0% {
-    transform: translateY(-20px) skewX(-15deg);
+    transform: translateY(-50px) skewX(-12deg);
     opacity: 0;
   }
-  20% {
-    opacity: var(--rain-opacity, 0.3);
+  10% {
+    opacity: 1;
   }
-  90% {
-    opacity: var(--rain-opacity, 0.3);
+  85% {
+    opacity: 1;
   }
   100% {
-    transform: translateY(450px) skewX(-15deg);
+    transform: translateY(490px) skewX(-12deg);
     opacity: 0;
   }
 }
 
 .rain-drop {
   position: absolute;
-  top: -20px;
-  width: 1.5px;
-  height: 24px;
-  background: linear-gradient(to bottom, transparent, rgba(14, 165, 233, 0.5));
+  top: -45px;
+  width: 2.5px;
+  height: 44px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(56, 189, 248, 0.4) 35%,
+    rgba(14, 165, 233, 0.95) 100%
+  );
   border-radius: 9999px;
-  animation: rain-fall linear infinite;
+  animation: rain-fall-visible linear infinite;
+  box-shadow: 0 0 3px rgba(56, 189, 248, 0.5);
 }
 
 .dark .rain-drop {
-  background: linear-gradient(to bottom, transparent, rgba(56, 189, 248, 0.35));
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(125, 211, 252, 0.4) 35%,
+    rgba(56, 189, 248, 0.9) 100%
+  );
+  box-shadow: 0 0 4px rgba(56, 189, 248, 0.6);
 }

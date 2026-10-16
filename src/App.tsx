@@ -131,7 +131,7 @@ export const App: React.FC = () => {
       onMouseUp={handleMouseUp}
       className="relative w-full h-full select-none"
     >
-      {/* 雨の日アンビエントエフェクト（背景で控えめに雨粒が落ちる） */}
+      {/* 雨の日アンビエントエフェクト（背景・カード手前で雨粒が落ちる） */}
       <RainAmbient
         weatherCode={weather?.current.weatherCode}
         precipitation={weather?.current.precipitation}
@@ -151,6 +151,8 @@ export const App: React.FC = () => {
             activeTab={activeTab}
             onSelectTab={setActiveTab}
             onOpenRadar={() => setIsRadarOpen(true)}
+            forceRain={forceRain}
+            onToggleRain={() => setForceRain((prev) => !prev)}
           />
         }
       >
