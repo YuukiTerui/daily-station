@@ -3,14 +3,17 @@ import React from 'react';
 interface RainAmbientProps {
   weatherCode?: number;
   precipitation?: number;
+  forceRain?: boolean; // 動作確認・デモ用プロップス
 }
 
 export const RainAmbient: React.FC<RainAmbientProps> = ({
   weatherCode = 0,
   precipitation = 0,
+  forceRain = false,
 }) => {
-  // 雨判定: WMOコード 51〜67, 80〜82, 95〜99 または 降水量 > 0.1mm
+  // 雨判定: WMOコード 51〜67, 80〜82, 95〜99 または 降水量 > 0.1mm または forceRain
   const isRaining =
+    forceRain ||
     precipitation > 0.1 ||
     (weatherCode >= 51 && weatherCode <= 67) ||
     (weatherCode >= 80 && weatherCode <= 82) ||

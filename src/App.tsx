@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useWeatherData } from '@/hooks/useWeatherData';
 import { useCurrentTime } from '@/hooks/useCurrentTime';
 import { useIndoorEnvironment } from '@/hooks/useIndoorEnvironment';
@@ -31,6 +31,24 @@ export const App: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'weather' | 'calendar'>('weather');
   const [isRadarOpen, setIsRadarOpen] = useState(false);
+
+  // URLパラメータ ?rain=1 で初期値を設定
+  const [forceRain, setForceRain] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search);
+    return params.get('rain') === '1';
+  });
+
+  // キーボード 'r' キーで雨エフェクトを動的トグル可能
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'r' || e.key === 'R') {
+        setForceRain((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Swipe / Drag gesture handling (Touch + Mouse drag)
   const dragStartX = useRef<number | null>(null);
@@ -117,6 +135,7 @@ export const App: React.FC = () => {
       <RainAmbient
         weatherCode={weather?.current.weatherCode}
         precipitation={weather?.current.precipitation}
+        forceRain={forceRain}
       />
 
       <DashboardLayout
