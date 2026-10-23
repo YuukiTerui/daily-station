@@ -13,6 +13,8 @@ import type { CalendarEvent } from '@/types/calendar';
 import type { WeatherData } from '@/types/weather';
 import { getDailyAdvice } from '@/lib/dailyAdvice';
 
+export type DashboardTab = 'weather' | 'calendar' | 'clock';
+
 interface StatusBarProps {
   lastUpdated?: Date | string;
   isNightMode: boolean;
@@ -21,8 +23,8 @@ interface StatusBarProps {
   isFetching: boolean;
   nextEvent?: CalendarEvent | null;
   weather?: WeatherData;
-  activeTab: 'weather' | 'calendar';
-  onSelectTab: (tab: 'weather' | 'calendar') => void;
+  activeTab: DashboardTab;
+  onSelectTab: (tab: DashboardTab) => void;
   onOpenRadar?: () => void;
   forceRain?: boolean;
   onToggleRain?: () => void;
@@ -154,6 +156,14 @@ export const StatusBar: React.FC<StatusBarProps> = ({
             activeTab === 'calendar' ? 'w-5 bg-primary' : 'w-2 bg-muted-foreground/40'
           }`}
           title="カレンダー画面"
+        />
+        <button
+          type="button"
+          onClick={() => onSelectTab('clock')}
+          className={`h-2 rounded-full transition-all cursor-pointer ${
+            activeTab === 'clock' ? 'w-5 bg-primary' : 'w-2 bg-muted-foreground/40'
+          }`}
+          title="大時計画面"
         />
       </div>
 

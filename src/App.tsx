@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useWeatherData } from '@/hooks/useWeatherData';
 import { useCurrentTime } from '@/hooks/useCurrentTime';
 import { useIndoorEnvironment } from '@/hooks/useIndoorEnvironment';
@@ -9,7 +9,8 @@ import { LeftPane } from '@/components/left-pane/LeftPane';
 import { CenterPane } from '@/components/center-pane/CenterPane';
 import { RightPane } from '@/components/right-pane/RightPane';
 import { CalendarPane } from '@/components/calendar-pane/CalendarPane';
-import { StatusBar } from '@/components/status-bar/StatusBar';
+import { ClockPane, type ClockNavHandler } from '@/components/clock-pane/ClockPane';
+import { StatusBar, type DashboardTab } from '@/components/status-bar/StatusBar';
 import { RainAmbient } from '@/components/common/RainAmbient';
 import { RadarModal } from '@/components/modals/RadarModal';
 
@@ -29,8 +30,11 @@ export const App: React.FC = () => {
   const indoor = useIndoorEnvironment();
   const { isNightMode, toggleNightMode } = useNightMode();
 
-  const [activeTab, setActiveTab] = useState<'weather' | 'calendar'>('weather');
+  const [activeTab, setActiveTab] = useState<DashboardTab>('weather');
   const [isRadarOpen, setIsRadarOpen] = useState(false);
+
+  // 時計ペインの縦スライド操作用Ref
+  const clockNavRef = useRef<ClockNavHandler | null>(null);
 
   // URLパラメータ ?rain=1 で初期値を設定
   const [forceRain, setForceRain] = useState(() => {
@@ -63,6 +67,36 @@ export const App: React.FC = () => {
         '[data-slot="dialog-content"], [data-slot="dialog-overlay"], [role="dialog"], button, input, [role="button"], a',
       ),
     );
+  };
+
+  const triggerSwipe = (deltaX: number, deltaY: number) => {
+    const absX = Math.abs(deltaX);
+    const absY = Math.abs(deltaY);
+
+    // 1. 横スワイプ判定: 画面切り替え (天気 ⇄ カレンダー ⇄ 大時計)
+    if (absX > 40 && absX > absY) {
+      if (deltaX < 0) {
+        // 次の画面へスライド
+        if (activeTab === 'weather') setActiveTab('calendar');
+        else if (activeTab === 'calendar') setActiveTab('clock');
+      } else {
+        // 前の画面へスライド
+        if (activeTab === 'clock') setActiveTab('calendar');
+        else if (activeTab === 'calendar') setActiveTab('weather');
+      }
+      return;
+    }
+
+    // 2. 縦スワイプ判定: 時計画面にいる場合、時計デザインを上下に切り替え
+    if (absY > 40 && absY > absX) {
+      if (activeTab === 'clock' && clockNavRef.current) {
+        if (deltaY < 0) {
+          clockNavRef.current.next();
+        } else {
+          clockNavRef.current.prev();
+        }
+      }
+    }
   };
 
   // Touch events
@@ -103,20 +137,14 @@ export const App: React.FC = () => {
     isDragging.current = false;
   };
 
-  const triggerSwipe = (deltaX: number, deltaY: number) => {
-    if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
-      if (deltaX < 0) {
-        setActiveTab('calendar');
-      } else {
-        setActiveTab('weather');
-      }
-    }
-  };
-
   const handleRefresh = () => {
     refetchWeather();
     refetchCalendar();
   };
+
+  const handleRegisterClockNav = useCallback((nav: ClockNavHandler | null) => {
+    clockNavRef.current = nav;
+  }, []);
 
   const nextEvent =
     calendarData?.events && calendarData.events.length > 0
@@ -158,10 +186,14 @@ export const App: React.FC = () => {
       >
         <div className="relative w-[800px] h-[438px] overflow-hidden">
           <div
-            className="flex w-[1600px] h-[438px] transition-transform duration-300 ease-in-out"
+            className="flex w-[2400px] h-[438px] transition-transform duration-300 ease-in-out"
             style={{
               transform:
-                activeTab === 'weather' ? 'translateX(0px)' : 'translateX(-800px)',
+                activeTab === 'weather'
+                  ? 'translateX(0px)'
+                  : activeTab === 'calendar'
+                    ? 'translateX(-800px)'
+                    : 'translateX(-1600px)',
             }}
           >
             {/* 画面1: 天気ダッシュボード */}
@@ -186,6 +218,15 @@ export const App: React.FC = () => {
                 events={calendarData?.events || []}
                 timeInfo={timeInfo}
                 isLoading={isCalendarLoading}
+              />
+            </div>
+
+            {/* 画面3: 大時計ダッシュボード (1画面全体を使った大時計・縦スライドで7種切替) */}
+            <div className="w-[800px] h-[438px] shrink-0">
+              <ClockPane
+                timeInfo={timeInfo}
+                isActive={activeTab === 'clock'}
+                onRegisterNav={handleRegisterClockNav}
               />
             </div>
           </div>

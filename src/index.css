@@ -807,3 +807,30 @@
   );
   box-shadow: 0 0 4px rgba(56, 189, 248, 0.6);
 }
+
+/* 3D Split-Flap Clock Animations */
+@keyframes flap-down-top {
+  0% {
+    transform: rotateX(0deg);
+  }
+  100% {
+    transform: rotateX(-90deg);
+  }
+}
+
+@keyframes flap-down-bottom {
+  0% {
+    transform: rotateX(90deg);
+  }
+  100% {
+    transform: rotateX(0deg);
+  }
+}
+
+.animate-flap-top {
+  animation: flap-down-top 0.22s ease-in forwards;
+}
+
+.animate-flap-bottom {
+  animation: flap-down-bottom 0.22s ease-out 0.2s forwards;
+}

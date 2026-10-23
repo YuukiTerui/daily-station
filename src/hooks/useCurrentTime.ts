@@ -8,6 +8,10 @@ export interface CurrentTimeInfo {
   japaneseEraString: string; // "令和8年"
   dayOfWeekString: string; // "火曜日"
   shortDayOfWeekString: string; // "火"
+  hours: number;
+  minutes: number;
+  seconds: number;
+  rawDate: Date;
 }
 
 function getJapaneseEra(year: number): string {
@@ -67,9 +71,13 @@ export function useCurrentTime(): CurrentTimeInfo {
     };
   }, []);
 
-  const hours = now.getHours().toString().padStart(2, '0');
-  const minutes = now.getMinutes().toString().padStart(2, '0');
-  const seconds = now.getSeconds().toString().padStart(2, '0');
+  const rawHours = now.getHours();
+  const rawMinutes = now.getMinutes();
+  const rawSeconds = now.getSeconds();
+
+  const hours = rawHours.toString().padStart(2, '0');
+  const minutes = rawMinutes.toString().padStart(2, '0');
+  const seconds = rawSeconds.toString().padStart(2, '0');
 
   const days = ['日', '月', '火', '水', '木', '金', '土'];
   const dayOfWeek = days[now.getDay()];
@@ -86,5 +94,9 @@ export function useCurrentTime(): CurrentTimeInfo {
     japaneseEraString: getJapaneseEra(year),
     dayOfWeekString: `${dayOfWeek}曜日`,
     shortDayOfWeekString: dayOfWeek,
+    hours: rawHours,
+    minutes: rawMinutes,
+    seconds: rawSeconds,
+    rawDate: now,
   };
 }
