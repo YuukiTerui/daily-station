@@ -98,8 +98,8 @@ export const ClockPane: React.FC<ClockPaneProps> = ({
     return 0;
   });
 
-  // デザイン名バッジの表示タイマー（切り替え時に数秒間フワッと強調表示）
-  const [showBadge, setShowBadge] = useState(true);
+  // デザイン名バッジの表示タイマー（切り替え操作時のみ数秒間フワッと表示し、その後完全に非表示）
+  const [showBadge, setShowBadge] = useState(false);
   const badgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const changeIndex = useCallback((newIndex: number) => {
@@ -116,7 +116,7 @@ export const ClockPane: React.FC<ClockPaneProps> = ({
     if (badgeTimerRef.current) clearTimeout(badgeTimerRef.current);
     badgeTimerRef.current = setTimeout(() => {
       setShowBadge(false);
-    }, 2800);
+    }, 2400);
   }, []);
 
   const handleNext = useCallback(() => {
@@ -133,7 +133,7 @@ export const ClockPane: React.FC<ClockPaneProps> = ({
     if (badgeTimerRef.current) clearTimeout(badgeTimerRef.current);
     badgeTimerRef.current = setTimeout(() => {
       setShowBadge(false);
-    }, 2800);
+    }, 2400);
   }, []);
 
   const handlePrev = useCallback(() => {
@@ -150,7 +150,7 @@ export const ClockPane: React.FC<ClockPaneProps> = ({
     if (badgeTimerRef.current) clearTimeout(badgeTimerRef.current);
     badgeTimerRef.current = setTimeout(() => {
       setShowBadge(false);
-    }, 2800);
+    }, 2400);
   }, []);
 
   // 親コンポーネント (App.tsx) へのナビゲーション関数登録
@@ -246,10 +246,12 @@ export const ClockPane: React.FC<ClockPaneProps> = ({
         </div>
       </div>
 
-      {/* フローティング: 時計デザイン名バッジ (切り替え時に表示) */}
+      {/* フローティング: 時計デザイン名バッジ (切り替え時のみフワッと表示) */}
       <div
-        className={`absolute top-3.5 left-4 z-30 flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-700/70 backdrop-blur-md shadow-xl transition-all duration-300 pointer-events-none ${
-          showBadge ? 'opacity-100 translate-y-0' : 'opacity-30 hover:opacity-100'
+        className={`absolute top-3.5 left-4 z-40 flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/95 border border-zinc-700/80 backdrop-blur-md shadow-2xl transition-all duration-300 pointer-events-none ${
+          showBadge
+            ? 'opacity-100 translate-y-0 scale-100'
+            : 'opacity-0 -translate-y-3 scale-95'
         }`}
       >
         <Layers className="w-3.5 h-3.5 text-zinc-400" />

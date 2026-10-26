@@ -23,15 +23,15 @@ export const FlipClockFace: React.FC<FlipClockFaceProps> = ({ timeInfo }) => {
 
   return (
     <div className="w-[800px] h-[438px] flex flex-col items-center justify-between p-6 bg-gradient-to-b from-zinc-900 via-zinc-950 to-zinc-900 relative overflow-hidden select-none">
-      {/* 背景の微細なテクスチャ & スリット */}
+      {/* 背景の微細なテクスチャ */}
       <div className="absolute inset-0 opacity-20 pointer-events-none bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]" />
 
       {/* トップヘッダー: 日付 & 曜日 & 和暦のフリップタグ */}
-      <div className="flex items-center justify-between w-full max-w-[690px] pt-1 z-10">
+      <div className="flex items-center justify-between w-full max-w-[680px] pt-1 z-10">
         <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+          <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
           <span className="font-mono text-xs font-bold tracking-widest text-zinc-400 uppercase">
-            SOLARI DIAL SYSTEM
+            SOLARI SYSTEM
           </span>
         </div>
 
@@ -40,7 +40,7 @@ export const FlipClockFace: React.FC<FlipClockFaceProps> = ({ timeInfo }) => {
           <span className="text-xs font-mono font-bold text-amber-400/90 tracking-wide">
             {timeInfo.japaneseEraString}
           </span>
-          <span className="text-xs font-bold text-zinc-300">{timeInfo.dateString}</span>
+          <span className="text-xs font-bold text-zinc-200">{timeInfo.dateString}</span>
           <span className="px-2 py-0.5 rounded-md bg-zinc-800 text-xs font-black text-primary font-mono tracking-wider">
             {timeInfo.dayOfWeekString}
           </span>
@@ -65,7 +65,7 @@ export const FlipClockFace: React.FC<FlipClockFaceProps> = ({ timeInfo }) => {
         </div>
 
         {/* コロン (メカニカルLEDドット) */}
-        <div className="flex flex-col gap-5 py-4 px-1">
+        <div className="flex flex-col gap-6 py-4 px-1">
           <span className="w-3.5 h-3.5 rounded-full bg-amber-400/90 shadow-[0_0_10px_rgba(251,191,36,0.8)] animate-pulse" />
           <span className="w-3.5 h-3.5 rounded-full bg-amber-400/90 shadow-[0_0_10px_rgba(251,191,36,0.8)] animate-pulse" />
         </div>
@@ -76,15 +76,20 @@ export const FlipClockFace: React.FC<FlipClockFaceProps> = ({ timeInfo }) => {
           <FlipCard value={m2} size="lg" />
         </div>
 
-        {/* 秒 (2枚: 中サイズでバランス良く配置) */}
-        <div className="flex items-center gap-1.5 ml-3 pl-4 border-l border-zinc-800/80">
-          <FlipCard value={s1} size="md" label="SEC" />
-          <FlipCard value={s2} size="md" />
+        {/* 秒 (2枚: 中サイズでペアで統一) */}
+        <div className="flex flex-col items-center gap-1.5 ml-3 pl-4 border-l border-zinc-800/80">
+          <div className="flex items-center gap-1.5">
+            <FlipCard value={s1} size="md" />
+            <FlipCard value={s2} size="md" />
+          </div>
+          <span className="font-mono text-[10px] font-bold tracking-wider text-zinc-500 uppercase">
+            SECONDS
+          </span>
         </div>
       </div>
 
       {/* ボトムフッター: 金属プレート風ネームタグ */}
-      <div className="flex items-center justify-between w-full max-w-[690px] pb-1 border-t border-zinc-800/80 pt-2 z-10 text-[11px] font-mono text-zinc-500">
+      <div className="flex items-center justify-between w-full max-w-[680px] pb-1 border-t border-zinc-800/80 pt-2 z-10 text-[11px] font-mono text-zinc-500">
         <div className="flex items-center gap-2">
           <span className="font-semibold tracking-wider text-zinc-400">
             SPLIT-FLAP MECHANICAL CHRONOMETER
