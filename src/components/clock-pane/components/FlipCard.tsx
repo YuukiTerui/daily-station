@@ -15,7 +15,7 @@ interface HalfCardProps {
   fontSize: number;
 }
 
-// 完全に幾何学的に上下50%ずつスライスするカードハーフコンポーネント
+// 完全に幾何学的に上下50%ずつスライスするカードハーフコンポーネント (100% 完全不透明遮光)
 const HalfCard: React.FC<HalfCardProps> = ({ val, isTop, width, height, fontSize }) => {
   const halfHeight = height / 2;
 
@@ -23,17 +23,27 @@ const HalfCard: React.FC<HalfCardProps> = ({ val, isTop, width, height, fontSize
     <div
       className={`w-full overflow-hidden relative select-none ${
         isTop
-          ? 'rounded-t-xl bg-gradient-to-b from-zinc-800 to-zinc-850 border-b border-black/80'
-          : 'rounded-b-xl bg-gradient-to-b from-zinc-850 to-zinc-900 border-t border-white/5'
+          ? 'rounded-t-xl border-b border-black/90'
+          : 'rounded-b-xl border-t border-white/5'
       }`}
       style={{
         height: `${halfHeight}px`,
         width: `${width}px`,
+        backgroundColor: isTop ? '#262830' : '#1c1d22',
+        backgroundImage: isTop
+          ? 'linear-gradient(to bottom, #2b2d36, #222329)'
+          : 'linear-gradient(to bottom, #202126, #17181c)',
       }}
     >
+      {/* 完全不透明な下地ベース（背後の数字が1ピクセルも透けないように完全遮光） */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ backgroundColor: isTop ? '#262830' : '#1c1d22' }}
+      />
+
       {/* 常に高さ height の親枠中央に数字を置き、上半分は top:0、下半分は top:-halfHeight で厳密に切り分ける */}
       <div
-        className="w-full flex items-center justify-center font-mono font-black text-zinc-100 select-none leading-none tracking-tight absolute left-0"
+        className="w-full flex items-center justify-center font-mono font-black text-zinc-100 select-none leading-none tracking-tight absolute left-0 z-10"
         style={{
           height: `${height}px`,
           top: isTop ? 0 : `-${halfHeight}px`,
@@ -45,9 +55,9 @@ const HalfCard: React.FC<HalfCardProps> = ({ val, isTop, width, height, fontSize
 
       {/* 上下カードそれぞれの質感・光沢 */}
       {isTop ? (
-        <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none z-20" />
       ) : (
-        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/50 to-transparent pointer-events-none z-20" />
       )}
     </div>
   );
@@ -77,7 +87,7 @@ export const FlipCard: React.FC<FlipCardProps> = ({
     const timer = setTimeout(() => {
       setIsFlipping(false);
       setPrev(current);
-    }, 420);
+    }, 400);
     return () => clearTimeout(timer);
   }, [isFlipping, current]);
 
@@ -143,7 +153,11 @@ export const FlipCard: React.FC<FlipCardProps> = ({
           {isFlipping && (
             <div
               className="absolute top-0 left-0 w-full z-20 origin-bottom [transform-style:preserve-3d] [backface-visibility:hidden] animate-flap-top shadow-lg"
-              style={{ height: `${halfHeight}px` }}
+              style={{
+                height: `${halfHeight}px`,
+                WebkitBackfaceVisibility: 'hidden',
+                backfaceVisibility: 'hidden',
+              }}
             >
               <HalfCard
                 val={prev}
@@ -152,7 +166,7 @@ export const FlipCard: React.FC<FlipCardProps> = ({
                 height={config.height}
                 fontSize={config.fontSize}
               />
-              <div className="absolute inset-0 bg-black/25 pointer-events-none" />
+              <div className="absolute inset-0 bg-black/30 pointer-events-none z-30" />
             </div>
           )}
 
@@ -160,7 +174,11 @@ export const FlipCard: React.FC<FlipCardProps> = ({
           {isFlipping && (
             <div
               className="absolute bottom-0 left-0 w-full z-30 origin-top [transform-style:preserve-3d] [backface-visibility:hidden] animate-flap-bottom shadow-2xl"
-              style={{ height: `${halfHeight}px` }}
+              style={{
+                height: `${halfHeight}px`,
+                WebkitBackfaceVisibility: 'hidden',
+                backfaceVisibility: 'hidden',
+              }}
             >
               <HalfCard
                 val={current}
@@ -169,7 +187,7 @@ export const FlipCard: React.FC<FlipCardProps> = ({
                 height={config.height}
                 fontSize={config.fontSize}
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none z-30" />
             </div>
           )}
 
